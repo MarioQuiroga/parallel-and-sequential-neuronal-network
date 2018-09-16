@@ -9,12 +9,12 @@
 
 int main()
 {
-
 	//Constructor MnistLoader
 	MnistLoader mnist = MnistLoader("MNIST/train-images.idx3-ubyte", 
 									"MNIST/t10k-images.idx3-ubyte", 
 									"MNIST/train-labels.idx1-ubyte", 
 									"MNIST/t10k-labels.idx1-ubyte");
+	
 	//METODO PARA IMPRIMIR TODOS LOS DATOS 0 IMPRIME DATOS DE ENTRENAMIENTO 1 IMPRIME DATOS DE PRUEBA
 	//mnist.print_data_set(0);	
 	//cout << mnist.train_data.size() << endl;

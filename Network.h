@@ -8,7 +8,7 @@
 using namespace std;
  
 /**
-*	FUNCION SIGMOIDE Y SU DERIVADA
+*	FUNCIÓN SIGMOIDE Y SU DERIVADA
 *
 */
 double sigmoid(double x)
@@ -68,7 +68,7 @@ class Network
 		void initNetwork()
 		{	
 			srand(time(NULL)); //Semilla para generar numeros aleatorios
-			//Inicializo los pesos 
+		//Inicializo los pesos 
 			//Recordar que el peso W[k][j][i] une la neurona j de la capa k con la neurona i de la capa k+1			
 			for(int k=0; k<numLayers-1;k++)
 			{
@@ -78,20 +78,22 @@ class Network
 					vector<double> columnas;					
 					for(int i=0;i<sizes[k+1];i++)
 					{							
-							double aux = (1+(double)(rand() % 10))/1000; //GENERO ALEATORIOS ENTRE 0 Y 1							
+							double aux = (1+(double)(rand() % 10))/1000; 
 							columnas.push_back(aux);
 					}				
 					filas.push_back(columnas);
 				}				
 				weights.push_back(filas);
 			}
-			//Inicializo matrices de input, outputs, bias y deltas (errores)
-			for (int i=0; i<numLayers; i++){	
+		//Inicializo vectores de input, outputs, bias y deltas (errores)
+			for (int i=0; i<numLayers; i++)
+			{	
 				vector<double>	outputs_filas;		
 				vector<double>	inputs_filas;		
 				vector<double>	deltas_filas;		
 				vector<double>	bias_filas;
-				for (int j=0; j<sizes[i]; j++){
+				for (int j=0; j<sizes[i]; j++)
+				{
 					//Se llenan con un valor cualquiera					
 					double aux = (1+(double)(rand() % 10))/1000; //GENERO ALEATORIOS ENTRE 0 Y 1
 					bias_filas.push_back(aux);
@@ -138,7 +140,7 @@ class Network
 		*
 		*	Aprendizaje por Retropropagación
 		*	--------------------------------
-		*	x_train: struct ExampleChar, "Ver archivo loaderMnist.h"
+		*	x_train: vector de ejemplos de entrenamiento (struct ExampleChar, "Ver archivo loaderMnist.h")
 		*	rateLearning: Velocidad de aprendizaje
 		*	epocas: Cantidad de iteraciones maxima que se prensenta el conjunto de entrenamiento a la red
 		*	errorMinimo: El entrenamiento finaliza cuando se ERROR =< errorMinimo
@@ -195,7 +197,7 @@ class Network
 				ERROR *=  0.5 * (1.0/cantidadEjemplos); // Promedio del error de todos los ejemplos de entrenamiento
 				cout.precision(100);
 				cout << "Epoca: " << contadorEpocas <<"	ERROR: " << ERROR << endl;
-				//CAMBIAR EL VALOR DE LA VELOCIDAD DE APRENDIZAJE
+				//CAMBIA EL VALOR DE LA VELOCIDAD DE APRENDIZAJE
 				if(ERROR>=ERRORANT)
 				{
 					rateLearning = rateLearning * 1/(1 + (double)(rand() % 10));
@@ -206,9 +208,11 @@ class Network
 		}	
 
 		/***
-		* 	En la salida de la red, la neurona con mayor valor será la que
-		*	esté activa y la que determinará el resultado según su posición.
+		*	Testear la red
 		*	-----------------------------------------------------------------
+		* 	Nota: En la salida de la red, la neurona con mayor valor será la que
+		*	esté activa, y la que determinará el resultado según su posición.
+		*	
 		*	x_test: struct ExampleChar, "Ver archivo loaderMnist.h"
 		*	cantidadEjemplos: cantidad de ejemplos a testear para no tener que cambiar el vector de prueba	
 		*
@@ -282,12 +286,80 @@ class Network
 		
 		void save(string path_to_save)
 		{
-			//ofstream file_to_save (path_to_save, ios::binary);
-			//std::fstream file_to_save (path_to_save, std::ifstream::in | std::ifstream::binary);
+			ofstream file_to_save (path_to_save, ios::binary);
+			if(file_to_save.is_open())
+			{
+				//Guardo la estructura de la red
+				file_to_save << numLayers << endl;
+				for(int i=0; i<numLayers; i++)
+				{
+					file_to_save << sizes[i] << endl;
+				}
+				//Guardo los pesos
+				for(int l=0;l<numLayers-1; l++) //Por cada capa
+				{
+					for(int i=0; i<sizes[l]; i++) //Por cada neurona
+					{
+						for(int k=0; k<sizes[l+1]; k++)
+						{
+							file_to_save << weights[l][i][k] << endl;
+						}
+					}
+				}
+				//Guardo los sesgos
+				for(int l=0; l<numLayers; l++)
+				{
+					for(int i=0; i<sizes[l]; i++)
+					{
+						file_to_save << bias[l][i] << endl;
+					}
+				}			
+				file_to_save.close();
+				cout << "La red se ha guardado correctamente" << endl;		
+			}
+			else
+			{
+				cout << "Error al crear el archivo" << endl;
+			}			
 		}
 		
 		void load(string path_to_load)
 		{
+			ifstream file_to_load (path_to_load, ios::binary);			
+			if(file_to_load.is_open())
+			{
+				//Leo la estructura de la red
+				file_to_load >> numLayers;
+				for (int i=0; i<numLayers; i++)
+				{
+					file_to_load >> sizes[i];
+				}
+				//Leo los pesos
+				for(int l=0; l<numLayers-1; l++)
+				{
+					for(int i=0; i<sizes[l]; i++)
+					{
+						for(int j=0; j<sizes[l+1]; j++)
+						{
+							file_to_load >> weights[l][i][j];
+						}
+					}
+				}
+				//Leo los sesgos
+				for(int l=0;l<numLayers; l++)
+				{
+					for(int i=0; i<sizes[l]; i++)
+					{
+						file_to_load >> bias[l][i];
+					}
+				}
+				file_to_load.close();
+				cout << "La red se ha cargado correctamente" << endl;				
+			}
+			else
+			{
+				cout << "Error al abrir el archivo. Verifique la ruta" << endl;
+			}
 			
 		}
 };
