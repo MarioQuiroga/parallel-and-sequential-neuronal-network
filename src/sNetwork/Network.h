@@ -6,6 +6,7 @@
 #include <time.h>
 #include "../loaderMnist.h"
 #include "../common/utilsCommon.h"
+#include "../common/loaderMnist.h"
 #include "utils.h"
 
 using namespace std; 

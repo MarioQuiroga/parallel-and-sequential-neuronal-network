@@ -4,11 +4,11 @@
 #include <cstdlib>
 #include <vector>
 #include <time.h>
-#include "loaderToDeviceMnist.h"
 #include "kernels/initKernels.h"
 #include "kernels/trainKernels.h"
 #include "kernels/utilsKernels.h"
 #include "../common/utilsCommon.h"
+#include "../common/loaderMnist.h"
 
 // Libraries CUDA C++
 #include <thrust/host_vector.h>
@@ -59,24 +59,25 @@ class Network_P
 			sumas_h.push_back(sumas_h[i-1] + (sizes_h[i] * sizes_h[i-1]));
 		}		
 		// Print sumas_h to test
-		cout << sumas_h[sumas_h.size()] << endl;
-		for (int i = 0; i < numLayers; ++i)
+		//cout << sumas_h[sumas_h.size()] << endl;
+		/*for (int i = 0; i < numLayers; ++i)
 		{
 			cout << sumas_h[i]	<< endl;
 		}		
+		cout << "-----------------------" << endl;*/
 		// Sum Neuron until layer
 		for(int i=1; i<sizes_h.size(); i++)
 		{
 			sumNeuron_h.push_back(sumNeuron_h[i-1] + sizes_h[i-1]);						
 		}
 		// Print sumNeuron to test
-		for(int i=0; i<sizes_h.size(); i++)
+		/*for(int i=0; i<sizes_h.size(); i++)
 		{
 			cout << sumNeuron_h[i] << endl;
-		}
+		}*/
 
 		cout << "Alloc memory to device" << endl;		
-		cudaMalloc((double ****)&weights, sizeof(double **) * numLayers);
+		cudaMalloc((double ****)&weights, sizeof(double **) * (numLayers-1));
 		cudaMalloc((double ***)&bias, sizeof(double * ) * numLayers);
 		cudaMalloc((double ***)&inputs, sizeof(double * ) * numLayers);
 		cudaMalloc((double ***)&outputs, sizeof(double * ) * numLayers);
@@ -93,16 +94,13 @@ class Network_P
 		cudaMalloc((int **) &sumNeuron_d, sizeof(int) * sumNeuron_h.size());
 		cudaMemcpy(sumas_d, getPointer(sumas_h), sizeof(int) * sumas_h.size(), cudaMemcpyHostToDevice);
 		cudaMemcpy(sumNeuron_d, getPointer(sumNeuron_h), sizeof(int) * sumas_h.size(), cudaMemcpyHostToDevice);
-
 		
 		// Init sequential weights and bias
-		cout << sumas_h.size() << endl;
 		thrust::device_vector<double> w(sumas_h[sumas_h.size()-1]);
-		cout << sum << endl;
 		thrust::device_vector<double> b(sum);
 		for(int i = 0; i<sumas_h[sumas_h.size()-1]; i++)
 		{
-			w.push_back((1+(double)(rand() % 10))/1000); 
+			w[i] = ((1+(double)(rand() % 10))/1000); 
 		}
 		for(int i = 0; i<sum; i++)
 		{
@@ -110,11 +108,9 @@ class Network_P
 		}
 		double * p_w = thrust::raw_pointer_cast(&w[0]);
 		double * p_b = thrust::raw_pointer_cast(&b[0]);
-		// Kernels to copy to device 
-		copyWeights<<<numLayers-1,1>>>(weights, p_w, sumas_d, sizes_d);		
-		matrixCpy<<<numLayers-1,1>>>(bias, p_b, sumNeuron_d, sizes_d, numLayers);
-		cout << "Copy weights" << endl;		
-		cout << "Copy bias" << endl;
+		// Kernels copy to device 
+		copyWeights<<<numLayers-1,1>>>(weights, p_w, sumas_d, sizes_d, numLayers);		
+		matrixCpy<<<numLayers,1>>>(bias, p_b, sumNeuron_d, sizes_d, numLayers);
 	}
 
 	/**	

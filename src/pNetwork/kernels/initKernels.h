@@ -11,19 +11,15 @@ using namespace std;
 */
 // 	alloc memory in device
 template <typename T>
-__device__
-void memColumnsDevice(T ** ptr, int size)
-{
-	ptr[blockIdx.x] = (T *) malloc(sizeof(T) * size);
-}
-
-template <typename T>
 __global__ 
 void memRows(T *** ptr, int * sizes)
 {
-	int i = blockIdx.x;
-	ptr[i] = (T **) malloc(sizeof(T*)*sizes[i]);
-	memColumnsDevice(ptr[i], sizes[i+1]);
+	int k = blockIdx.x;
+	ptr[k] = (T **) malloc(sizeof(T*)*sizes[k]);
+	for(int j=0; j<sizes[k]; j++)
+	{
+		ptr[k][j] = (T *) malloc(sizeof(T) * sizes[k+1]);
+	}
 }
 
 template <typename T>
@@ -36,14 +32,19 @@ void memColumns(T ** ptr, int * sizes)
 // 	copy to device
 template <typename T>
 __global__		
-void copyWeights(T *** weights, T * w, int * sumas, int * sizes)
+void copyWeights(T *** weights, T * w, int * sumas, int * sizes, int numLayers)
 {
 	int k = blockIdx.x;
-	for (int j = 0; j < sizes[k]; ++j)
+	if(k<numLayers-1)
 	{
-		for (int i = 0; i < sizes[k+1]; ++i)
+		for (int j = 0; j < sizes[k]; ++j)
 		{
-			weights[k][j][i] = w[sumas[k] + (sizes[k]*sizes[k+1] + i)];
+			for (int i = 0; i < sizes[k+1]; ++i)
+			{
+				//print to test
+				//printf("[%i][%i][%i] = [%i]\n", k, j, i, sumas[k] + ((j*sizes[k+1]) + i));
+				weights[k][j][i] = w[sumas[k] + ((j*sizes[k+1]) + i)];
+			}
 		}
 	}
 }

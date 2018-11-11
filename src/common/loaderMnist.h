@@ -7,19 +7,29 @@
 // BIG-Endian to LITTLE-Endian byte swap
 #define swap16(n) (((n&0xFF00)>>8)|((n&0x00FF)<<8))
 #define swap32(n) ((swap16((n&0xFFFF0000)>>16))|((swap16(n&0x0000FFFF))<<16))
+#define nInput 784;
+#define nOutput 10;
+
 
 typedef unsigned char  byte;
 
+
+template <typename T>
+int sizeElements(T * p)
+{
+	return (sizeof(p)/sizeof(T *));
+}
+
 struct ExampleChar {
-    std::vector<double> input_data;          // Store the 784 (28x28) pixel color values (0-255) of the digit-image
-    std::vector<double> output;             // Store the expected output (e.g: label 5 / output 0,0,0,0,0,1,0,0,0,0)
-    int label;                              // Store the handwritten digit in number form
-    ExampleChar() : input_data(std::vector<double>()), output(std::vector<double>(10)), label(0) {}
+    double input_data[748];	// Store the 784 (28x28) pixel color values (0-255) of the digit-image
+    double output[10];	// Store the expected output (e.g: label 5 / output 0,0,0,0,0,1,0,0,0,0)
+    int label;	// Store the handwritten digit in number form
+    ExampleChar() : label(0) {}
 };
 
 void loadData(std::fstream * file_images, std::fstream * file_labels, std::vector<ExampleChar> * data)
 {
-	//VERIFICANDO LA INTEGRIDAD DE LOS ARCHIVOS
+	//VERIFY FILES
 	int magicNum_images = 0, magicNum_labels = 0;
 	file_images->read((char*)&magicNum_images, 4);									
 	file_labels->read((char*)&magicNum_labels, 4);						
@@ -32,15 +42,16 @@ void loadData(std::fstream * file_images, std::fstream * file_labels, std::vecto
 		file_images->read((char*)&itemCount_images, 4);			
 		itemCount_labels = swap32(itemCount_labels);
 		itemCount_images = swap32(itemCount_images);
-		//std::cout <<  itemCount_images << std::endl;
+		std::cout << "Number of Items: " << itemCount_images << std::endl;
 		//std::cout << itemCount_labels << std::endl;
 		file_images->read((char*)&row_count, 4);			
 		file_images->read((char*)&col_count, 4);				
 		row_count = swap32(row_count);
 		col_count = swap32(col_count);
-		//std::cout << row_count;
-		//std::cout << " x ";
-		//std::cout << col_count << std::endl; 
+		std::cout << "Size of items" << row_count;
+		std::cout << " x ";
+		std::cout << col_count << std::endl; 
+		std::cout << std::endl;
 		
 		for (int i = 0; i < itemCount_images; i++) {
 			ExampleChar tmpchar = ExampleChar();
@@ -51,24 +62,24 @@ void loadData(std::fstream * file_images, std::fstream * file_labels, std::vecto
 				// read one byte (0-255 color value of the pixel)
 				file_images->read((char*)&pixel, sizeof(pixel));				
 				p = (double) pixel/100;
-				tmpchar.input_data.push_back(p);						
+				tmpchar.input_data[i] = p;
+				//tmpchar.input_data.push_back(p);						
 			}			
 			file_labels->read((char*)&label, 1);
 			tmpchar.label = (int) label;
-			for(int i=0; i<tmpchar.output.size();i++){
+			for(int i=0; i<10;i++){
 				if(i==label){
 					tmpchar.output[i] = 1;
 				}else{
 					tmpchar.output[i] = 0;
 				}						
 			}						
-			data->push_back(tmpchar);
-			
+			data->push_back(tmpchar);			
 		}	
 		
 	}else{
-		if(magicNum_images!=2051) std::cout << "Error, numero magico de imagenes no valido. Verifique la integridad del archivo." << std::endl;
-		if(magicNum_labels!=2049) std::cout << "Error, numero magico de etiquetas no valido. Verifique la integridad del archivo." << std::endl;				
+		if(magicNum_images!=2051) std::cout << "Error, magic num of images invalid. Check file." << std::endl;
+		if(magicNum_labels!=2049) std::cout << "Error, magic num of labels invalid. Check file." << std::endl;				
 	}								
 }
 	
@@ -85,7 +96,7 @@ class MnistLoader
 					const std::string path_train_labels, 
 					const std::string path_test_labels)
 		{
-			std::cout << "Cargando DataSet MNIST..." << std::endl;
+			std::cout << "Loading DataSet MNIST..." << std::endl;
 			std::fstream file_train_images (path_train_images, std::ifstream::in | std::ifstream::binary);
 			std::fstream file_test_images (path_test_images, std::ifstream::in | std::ifstream::binary);
 			std::fstream file_train_labels (path_train_labels, std::ifstream::in | std::ifstream::binary);
@@ -95,6 +106,7 @@ class MnistLoader
 			test_data = std::vector<ExampleChar>();
 			
 			if(file_train_images.is_open()&&file_train_labels.is_open()){
+				std::cout << "loading data train" << std::endl;
 				loadData(&file_train_images, &file_train_labels, &train_data);			
 				file_train_images.close();
 				file_train_labels.close();
@@ -104,6 +116,7 @@ class MnistLoader
 			}		
 			
 			if (file_test_labels.is_open()&&file_test_images.is_open()){
+				std::cout << "loading data test" << std::endl;
 				loadData(&file_test_images, &file_test_labels, &test_data);			
 				file_test_images.close();
 				file_test_labels.close();
@@ -115,9 +128,9 @@ class MnistLoader
 		
 		void print_data_set(int set)
 		{
-			if(set==0){ // IMPRIMO DATOS DE ENTRENAMIENTO
+			if(set==0){ // Print train data
 				
-				for(int i=0; i<train_data.size(); i++)
+				for(int i=0; i<784; i++)
 				{	
 					std::cout << "Label: " ;
 					std::cout << train_data[i].label << std::endl;
@@ -144,8 +157,8 @@ class MnistLoader
 					
 				}
 			}else{
-				if(set==1){ // IMPRIMO DATOS DE PRUEBA
-					for(int i=0; i<test_data.size(); i++)
+				if(set==1){ // Print test data
+					for(int i=0; i<784; i++)
 					{	
 						std::cout << "Label: " ;
 						std::cout << test_data[i].label << std::endl;

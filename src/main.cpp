@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <vector>
 #include <time.h>
-#include "loaderMnist.h"
+#include "coommon/loaderMnist.h"
 #include "sNetwork/Network.h"
 
 int main()
