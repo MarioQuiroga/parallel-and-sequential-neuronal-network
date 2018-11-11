@@ -5,6 +5,7 @@
 #include <vector>
 #include <time.h>
 #include "../loaderMnist.h"
+#include "../common/utilsCommon.h"
 #include "utils.h"
 
 using namespace std; 
