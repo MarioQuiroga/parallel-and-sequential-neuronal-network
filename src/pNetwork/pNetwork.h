@@ -178,31 +178,44 @@ class Network_P
 			ExampleChar * d_x_train;
 			cudaMalloc((void**) & d_x_train, cantidadEjemplos * sizeof (ExampleChar));
 			cudaMemcpy(&d_x_train, getPointer(x_train), cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice);
+			//std::cout << sizes_h[sizes_h.size()-1] << std::endl;
+			//thrust::device_vector<double> error(sizes_h[sizes_h.size()-1]);
+			double * error;
+			cudaMalloc((void**) & error, sizes_h[sizes_h.size()-1] * sizeof (double));			
+			double * er = (double*) malloc(sizeof(double)*sizes_h[sizes_h.size()-1]);
 			while(ERROR > errorMinimo && contadorEpocas < epocas)
 			{					
 				ERROR = 0;
 				for(int e=0; e<cantidadEjemplos; e++) // For each example from d_x_train				
 				{					
 					feedForwardTrain(d_x_train);	
-					thrust::device_vector<double> error(sizes_h[sizes_h.size()-1]);			
-					double * ptr_error = (double *)thrust::raw_pointer_cast(&error);
+					
+					//double * ptr_error = thrust::raw_pointer_cast(&error[0]);			
 					computeErrorExitLayer<<<sizes_h[numLayers-1], 1>>>(d_x_train, 
-																	   outputs,
-																	   inputs, 
-																	   deltas, 
-																	   ptr_error, 
-																	   numLayers-1);
-					ERROR += thrust::reduce(error.begin(), error.end(), 0, thrust::plus<double>());					
-
+											   outputs,
+											   inputs, 
+											   deltas, 
+											   error, 
+											   numLayers-1);
+					cout << " Print error " << endl;
+					/*for(int i=0;i<sizes_h[sizes_h.size()-1];i++)
+					{
+						cout << error[i] << endl;
+					}*/
+					//cout << "---------------------------------" <<endl;
+					cudaMemcpy(er, error, sizeof(double)*sizes_h[sizes_h.size()-1], cudaMemcpyDeviceToHost);
+					for(int i=0;i<sizes_h[sizes_h.size()-1];i++)
+					{						
+						ERROR+= er[i];
+					}
+					//ERROR += thrust::reduce(error.begin(), error.end(), 0, thrust::plus<double>());					
+					cout << ERROR <<endl;					
 					//Backpropagation of Error							
 					for(int l=numLayers-2; l>=0; l--)
 					{
-						backPropagationError<<<sizes_h[l], 1>>>(weights, deltas, 
-																sizes_d, inputs, l);
+						backPropagationError<<<sizes_h[l], 1>>>(weights, deltas, sizes_d, inputs, l);
 						// Update Weights						
-						updateWeights<<<sizes_h[l], sizes_h[l+1]>>>(weights, outputs, 
-														   			deltas, rateLearning, 
-														   			l); 
+						updateWeights<<<sizes_h[l], sizes_h[l+1]>>>(weights, outputs,deltas, rateLearning, l); 
 						//Update Bias
 						updateBias<<<sizes_h[l], 1>>>(bias, deltas, rateLearning, l);
 					}							

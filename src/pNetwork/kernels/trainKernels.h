@@ -17,19 +17,20 @@ void outputInLayerInput(double ** ptr, double * ptr_input)
 
 __global__ 
 void outputNeuron(double ** ptr_outputs, 
-				  double ** ptr_inputs, 
-				  double *** ptr_weights, 
-				  double ** ptr_bias,
-				  int * ptr_sizes,
-				  int layer)
+		  double ** ptr_inputs, 
+		  double *** ptr_weights, 
+		  double ** ptr_bias,
+		  int * ptr_sizes,
+		  int layer)
 {
 	int i = blockIdx.x;
+	__syncthreads();
 	ptr_inputs[layer][i] = 0;
 	for(int j = 0; j< ptr_sizes[layer-1]; j++)	//	Hago la sumatoria
 	{
 		//Recordar que el peso W[k][j][i] une la neurona 
 		//j de la capa k con la neurona i de la capa k+1					
-		ptr_inputs[layer][i] +=  ptr_weights[layer][j][i] * ptr_outputs[layer-1][j];
+		ptr_inputs[layer][i] +=  ptr_weights[layer-1][j][i] * ptr_outputs[layer-1][j];
 	}
 	ptr_inputs[layer][i] += ptr_bias[layer][i];
 	ptr_outputs[layer][i] = sigmoid(ptr_inputs[layer][i]); 					
@@ -39,8 +40,12 @@ void outputNeuron(double ** ptr_outputs,
 *	KERNELS for train_backpropagation
 *
 */
-__global__ void computeErrorExitLayer(ExampleChar * x_train, double ** outputs, double ** inputs,
-									  double ** deltas,  double * ptr_error, int j)
+__global__ void computeErrorExitLayer(ExampleChar * x_train, 
+				      double ** outputs, 
+				      double ** inputs,
+    				      double ** deltas,  
+				      double * ptr_error, 
+				      int j)
 {
 	int i = blockIdx.x;	
 	ptr_error[i] = (x_train[0].output[i] - outputs[j][i]);										

@@ -18,21 +18,22 @@ int main()
 	//METODO PARA IMPRIMIR TODOS LOS DATOS: 0 IMPRIME DATOS DE ENTRENAMIENTO, 
 	//										1 IMPRIME DATOS DE PRUEBA
 	//mnist.print_data_set(0);	
-	cout << mnist.train_data.size() << endl;
+	//cout << mnist.train_data.size() << endl;
 	
 	//CREO LA ESTRUCTURA DE LA RED
 	vector<int> sizes;	
-	//sizes.push_back(784); sizes.push_back(100); sizes.push_back(50); sizes.push_back(15); sizes.push_back(10);			
-	sizes.push_back(3); sizes.push_back(5); sizes.push_back(2);
+	sizes.push_back(784); sizes.push_back(100); sizes.push_back(50); sizes.push_back(15); sizes.push_back(10);			
+	//sizes.push_back(3); sizes.push_back(5); sizes.push_back(2);
 	Network_P net = Network_P(sizes);	
 	
-	//net.mostrar_pesos();  net.mostrar_output();	
+	//net.mostrar_pesos();  
+	//net.mostrar_output();	
 	//net.test_network(mnist.train_data, 50);
 	int EPOCAS = 6000;
 	double ERROR = 0.001;
 	double RATELEARNING = 0.5;		
 	
-	//net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 50);	
+	net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 50);	
 	
 	//net.test_network(mnist.train_data, 50);
 	//net.mostrar_output();
