@@ -4,11 +4,12 @@
 #include <cstdlib>
 #include <vector>
 #include <time.h>
-#include "coommon/loaderMnist.h"
+#include "sNetwork/loaderMnist.h"
 #include "sNetwork/Network.h"
 
 int main()
 {
+	clock_t tStart, tEnd;
 	//Constructor MnistLoader
 	MnistLoader mnist = MnistLoader("../MNIST/train-images.idx3-ubyte", 
 									"../MNIST/t10k-images.idx3-ubyte", 
@@ -31,9 +32,12 @@ int main()
 	double ERROR = 0.001;
 	double RATELEARNING = 0.5;		
 	
-	net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 50);	
-	
-	net.test_network(mnist.train_data, 50);
+	tStart = clock();
+	net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 600);	
+	tEnd = clock();
+	clock_t train_time = tEnd-tStart;
+	cout << "Tiempo de entrenamiento en red secuencial: " << train_time << endl;
+	//net.test_network(mnist.train_data, 100);
 	//net.mostrar_output();
 
     return 0;

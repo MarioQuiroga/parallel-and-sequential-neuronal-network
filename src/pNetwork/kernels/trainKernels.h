@@ -24,7 +24,6 @@ void outputNeuron(double ** ptr_outputs,
 		  int layer)
 {
 	int i = blockIdx.x;
-	__syncthreads();
 	ptr_inputs[layer][i] = 0;
 	for(int j = 0; j< ptr_sizes[layer-1]; j++)	//	Hago la sumatoria
 	{

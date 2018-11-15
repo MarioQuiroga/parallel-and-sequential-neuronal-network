@@ -100,11 +100,11 @@ class Network_P
 		thrust::device_vector<double> b(sum);
 		for(int i = 0; i<sumas_h[sumas_h.size()-1]; i++)
 		{
-			w[i] = ((1+(double)(rand() % 10))/1000); 
+			w[i] = ((1+(double)(rand() % 8))/1000); 
 		}
 		for(int i = 0; i<sum; i++)
 		{
-			b[i] = ((1+(double)(rand() % 10))/1000); 
+			b[i] = ((1+(double)(rand() % 8))/1000); 
 		}
 		double * p_w = thrust::raw_pointer_cast(&w[0]);
 		double * p_b = thrust::raw_pointer_cast(&b[0]);
@@ -170,6 +170,7 @@ class Network_P
 		**/
 		void train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
 		{	
+			clock_t tStart, tEnd;
 			cout << "Entrenando..." << endl;
 			double ERRORANT = 0;
 			int contadorEpocas = 0;
@@ -178,38 +179,32 @@ class Network_P
 			ExampleChar * d_x_train;
 			cudaMalloc((void**) & d_x_train, cantidadEjemplos * sizeof (ExampleChar));
 			cudaMemcpy(&d_x_train, getPointer(x_train), cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice);
-			//std::cout << sizes_h[sizes_h.size()-1] << std::endl;
-			//thrust::device_vector<double> error(sizes_h[sizes_h.size()-1]);
 			double * error;
 			cudaMalloc((void**) & error, sizes_h[sizes_h.size()-1] * sizeof (double));			
 			double * er = (double*) malloc(sizeof(double)*sizes_h[sizes_h.size()-1]);
 			while(ERROR > errorMinimo && contadorEpocas < epocas)
-			{					
+			{			
+				tStart = clock();		
 				ERROR = 0;
 				for(int e=0; e<cantidadEjemplos; e++) // For each example from d_x_train				
 				{					
 					feedForwardTrain(d_x_train);	
-					
-					//double * ptr_error = thrust::raw_pointer_cast(&error[0]);			
 					computeErrorExitLayer<<<sizes_h[numLayers-1], 1>>>(d_x_train, 
 											   outputs,
 											   inputs, 
 											   deltas, 
 											   error, 
 											   numLayers-1);
-					cout << " Print error " << endl;
+					//cout << " Print error " << endl;
 					/*for(int i=0;i<sizes_h[sizes_h.size()-1];i++)
 					{
 						cout << error[i] << endl;
 					}*/
-					//cout << "---------------------------------" <<endl;
 					cudaMemcpy(er, error, sizeof(double)*sizes_h[sizes_h.size()-1], cudaMemcpyDeviceToHost);
 					for(int i=0;i<sizes_h[sizes_h.size()-1];i++)
 					{						
 						ERROR+= er[i];
 					}
-					//ERROR += thrust::reduce(error.begin(), error.end(), 0, thrust::plus<double>());					
-					cout << ERROR <<endl;					
 					//Backpropagation of Error							
 					for(int l=numLayers-2; l>=0; l--)
 					{
@@ -230,8 +225,14 @@ class Network_P
 				}
 				ERRORANT = ERROR;
 				contadorEpocas++;
+				tEnd = clock();
+				clock_t train_time = tEnd-tStart;
+				cout << "Tiempo de epoca: " << train_time << endl;
+
 			}
-			//cudaFree(d_x_train);
+			cudaFree(d_x_train);
+			cudaFree(error);
+			free(er);
 		}	
 
 		/***

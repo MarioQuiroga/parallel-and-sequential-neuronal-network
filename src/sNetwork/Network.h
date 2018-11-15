@@ -4,10 +4,10 @@
 #include <cstdlib>
 #include <vector>
 #include <time.h>
-#include "../loaderMnist.h"
 #include "../common/utilsCommon.h"
-#include "../common/loaderMnist.h"
+#include "loaderMnist.h"
 #include "utils.h"
+
 
 using namespace std; 
 
@@ -31,7 +31,7 @@ class Network
 	void initNetwork()
 		{	
 			srand(time(NULL)); //Semilla para generar numeros aleatorios
-		//Inicializo los pesos 
+			//Inicializo los pesos 
 			//Recordar que el peso W[k][j][i] une la neurona j de la capa k con la neurona i de la capa k+1			
 			for(int k=0; k<numLayers-1;k++)
 			{
@@ -75,11 +75,12 @@ class Network
 		*	Calcula la salida de la red para una entrada					
 		*
 		**/
-		vector<double> feedForward(vector <double> & input)		
+		vector<double> feedForward(vector<double> & input)		
 		{			
 			for(int i=0; i<outputs[0].size(); i++) //Calcular el output de la capa de entrada
 			{
 				outputs[0][i] = input[i];
+				//cout << "------" << outputs[0][i] << endl;
 			}			
 			for(int l=1; l<outputs.size(); l++) //Calcular el output de las capas ocultas y salidas
 			{
@@ -93,7 +94,11 @@ class Network
 						inputs[l][i] +=  weights[l-1][j][i] * outputs[l-1][j];
 					}
 					inputs[l][i] += bias[l][i];
+					//cout << "------" << inputs[l][i] << endl;
+
 					outputs[l][i] = sigmoid(inputs[l][i]); 					
+					//cout << "------" << outputs[l][i] << endl;
+	
 				}
 			}
 			vector<double> salidas = outputs[outputs.size()-1];
@@ -125,23 +130,29 @@ class Network
 		**/
 		void train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
 		{	
+			clock_t tStart, tEnd;
 			cout << "Entrenando..." << endl;
 			double suma; 	
 			double ERRORANT = 0;
 			int contadorEpocas = 0;
 			double ERROR = 200.0;	double error;			
 			while(ERROR > errorMinimo && contadorEpocas < epocas)
-			{					
+			{	
+				tStart = clock();				
 				ERROR = 0;
 				for(int e=0; e<cantidadEjemplos; e++) //	Por cada ejemplo en el conjunto de entrenamiento				
 				{
 					vector<double> salida = feedForward(x_train[e].input_data);//  Calculo el output para el ejemplo e					
 					//Calculo el error en la capa de salida
 					for(int i=0; i<outputs[numLayers-1].size(); i++)
-					{							
+					{	
+						//cout << x_train[e].output[i] << endl;						
+						//cout << outputs[outputs.size()-1][i] << endl;
 						error = (x_train[e].output[i] - outputs[outputs.size()-1][i]);										
+						//cout << error << endl;	
 						deltas[deltas.size()-1][i] = sigmoid_prima(inputs[inputs.size()-1][i]) * error;						
 						ERROR += error*error; //Guardamos el cuadrado del error
+						//cout << ERROR << endl;
 					}
 					//Propagar el error hacia atras
 					for(int l=numLayers-2; l>=0; l--)
@@ -181,6 +192,10 @@ class Network
 				}
 				ERRORANT = ERROR;
 				contadorEpocas++;
+				tEnd = clock();
+				clock_t train_time = tEnd-tStart;
+				cout << "Tiempo de epoca: " << train_time << endl;
+
 			}
 		}	
 
@@ -204,7 +219,7 @@ class Network
 				int sal = index_max(salida);
 				
 				cout << "Salida deseada: " << x_test[i].label << endl;
-				for(int j=0;j<x_test[i].output.size();j++)
+				for(int j=0;j<sizes[sizes.size()-1];j++)
 				{					
 					cout << x_test[i].output[j] << "|";
 				}

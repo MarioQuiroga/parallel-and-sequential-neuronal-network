@@ -9,6 +9,7 @@
 
 int main()
 {
+	clock_t tStart, tEnd;
 	//Constructor MnistLoader
 	MnistLoader mnist = MnistLoader("../MNIST/train-images.idx3-ubyte", 
 									"../MNIST/t10k-images.idx3-ubyte", 
@@ -23,19 +24,20 @@ int main()
 	//CREO LA ESTRUCTURA DE LA RED
 	vector<int> sizes;	
 	sizes.push_back(784); sizes.push_back(100); sizes.push_back(50); sizes.push_back(15); sizes.push_back(10);			
-	//sizes.push_back(3); sizes.push_back(5); sizes.push_back(2);
 	Network_P net = Network_P(sizes);	
 	
 	//net.mostrar_pesos();  
-	//net.mostrar_output();	
 	//net.test_network(mnist.train_data, 50);
 	int EPOCAS = 6000;
-	double ERROR = 0.001;
+	double ERROR = 0.00000001;
 	double RATELEARNING = 0.5;		
 	
-	net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 50);	
-	
-	//net.test_network(mnist.train_data, 50);
+	tStart = clock();
+	net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 600);		
+	tEnd = clock();
+	clock_t train_time = tEnd-tStart;
+	cout << "Tiempo de entrenamiento en red paralela: " << train_time << endl;
+	//net.test_network(mnist.test_data, 10000);
 	//net.mostrar_output();
 
     return 0;
