@@ -168,8 +168,9 @@ class Network_P
 		*	errorMinimo: El entrenamiento finaliza cuando se ERROR =< errorMinimo
 		*
 		**/
-		void train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
+		vector<double> train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
 		{	
+			std::vector<double> response;
 			clock_t tStart, tEnd;
 			cout << "Entrenando..." << endl;
 			double ERRORANT = 0;
@@ -218,6 +219,7 @@ class Network_P
 				ERROR *=  0.5 * (1.0/cantidadEjemplos); // Average error of examples
 				cout.precision(100);
 				cout << "Epoca: " << contadorEpocas <<"	ERROR: " << ERROR << endl;
+				response.push_back(ERROR);
 				//Change rateLearning
 				if(ERROR>=ERRORANT)
 				{
@@ -233,6 +235,7 @@ class Network_P
 			cudaFree(d_x_train);
 			cudaFree(error);
 			free(er);
+			return response;
 		}	
 
 		/***
@@ -245,12 +248,12 @@ class Network_P
 		*	cantidadEjemplos: cantidad de ejemplos a testear para no tener que cambiar el vector de prueba	
 		*
 		***/
-		void test_network(vector<ExampleChar> x_test, int cantidadEjemplos)
+		double test_network(vector<ExampleChar> x_test, int cantidadEjemplos)
 		{			
 			double suma = 0;
 			for(int i=0; i<cantidadEjemplos;i++)
 			{
-				vector<double> salida = feedForward(&x_test[i]);
+				vector<double> salida = feedForward(x_test[i]);
 				
 				int sal = index_max(salida);
 				
@@ -276,6 +279,7 @@ class Network_P
 				cout << "------------------------------------------------" << endl;
 			}
 			cout << "Presicion: " <<  suma/cantidadEjemplos*100 << "%" <<  endl;
+			return suma/cantidadEjemplos*100;
 		}	
 	
 		void mostrar_pesos()

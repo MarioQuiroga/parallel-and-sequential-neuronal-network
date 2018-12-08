@@ -1,8 +1,14 @@
+#ifndef utilsCommon_h
+#define utilsCommon_h
 #include <stdio.h>
 #include <cmath>
 #include <vector>
 
 using namespace std; 
+
+/*struct responseRec(){
+
+};*/
 
 /**
 *	DEVUELVE LA POSICIÓN DEL MAYOR ELEMENTO DE UN VECTOR
@@ -22,4 +28,7 @@ int index_max(vector<double> entrada)
 	}
 	return indice;	
 }
+#endif
+
+
 

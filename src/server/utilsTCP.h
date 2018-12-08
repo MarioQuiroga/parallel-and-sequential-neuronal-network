@@ -44,15 +44,56 @@ void bind_to_port(int socket, int port)
 	}
 }
 
+template<typename T>
+T readNum(int socket, T * n)
+{
+	if (recv(socket, n, sizeof(T), 0) == -1) 
+	{
+        perror("Error in recv Num");
+        exit(1);
+    }
+}
+
+template<typename T>
+T writeNum(int socket, T * n)
+{
+	if (send(socket, n, sizeof(T), 0) == -1) 
+	{
+        perror("Error in send Num");
+        exit(1);
+    }
+}
+
+template<typename T>
+void writeVector(int socket, std::vector<T> input)
+{
+	writeNum(socket, input.size());
+	for (int i = 0; i < input.size(); ++i)
+	{
+		writeNum(socket, input[i]);
+	}
+}
+
+template<typename T>
+void readVector(int socket, std::vector<T> * input)
+{
+	std::vector<T> res;
+	T c;
+	int n;
+	readNum(socket, &n);
+	for (int i = 0; i < n; ++i)
+	{
+		readNum(socket, &c);
+		res.push_back(c);
+	}
+	*input = res;
+}
+
 void readLine(int socket, std::string * line)
 {
 	//cout << "Recibiendo..."<< endl;
 	int n;
-	if (recv(socket, &n, sizeof(int), 0) == -1) 
-	{
-        perror("Error in recv");
-        exit(1);
-    }
+	readNum(socket, &n);
     char * c = new char[n];
     if (recv(socket, c, n, 0) == -1) 
 	{

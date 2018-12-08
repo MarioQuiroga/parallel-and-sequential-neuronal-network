@@ -1,3 +1,5 @@
+#ifndef Server_h
+#define Server_h
 #include "serverThread.h"
 #include <iostream>
 #include <stdio.h>
@@ -43,7 +45,7 @@ public:
 			return;
 		}
 
-		cout << "Server Listener" << endl;
+		cout << "Servidor escuchando..." << endl;
 		
 		int connect;
 		while(1)
@@ -57,7 +59,7 @@ public:
 	        }
 			struct sockaddr_storage client;
 			unsigned int addres_size = sizeof(client);
-			cout << "Esperando al cliente" << endl;
+			cout << "Esperando al cliente..." << endl;
 			// Create socket client			
 			try
 			{
@@ -82,13 +84,8 @@ public:
 				cout << "Problemas en connect." << endl;
 		    	cout << e.what() << endl;
 			}					
-		}
+
 	}	
 };
 
-// To test 
-int main()
-{
-	Server s = Server(9000);
-	return 0;
-}
+#endif

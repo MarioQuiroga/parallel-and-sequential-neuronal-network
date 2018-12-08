@@ -118,6 +118,13 @@ class Network
 			initNetwork();			
 		}
 		
+		int recogn(vector<double> & input)
+		{
+			vector<double> salida = feedForward(input);			
+			int sal = index_max(salida);
+			return sal;;
+		}
+
 		/**
 		*
 		*	Aprendizaje por Retropropagación
@@ -128,8 +135,10 @@ class Network
 		*	errorMinimo: El entrenamiento finaliza cuando se ERROR =< errorMinimo
 		*
 		**/
-		void train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
+
+		vector<double> train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
 		{	
+			std::vector<double> response;
 			clock_t tStart, tEnd;
 			cout << "Entrenando..." << endl;
 			double suma; 	
@@ -190,13 +199,14 @@ class Network
 				{
 					rateLearning = rateLearning * 1/(1 + (double)(rand() % 10));
 				}
+				response.push_back(ERROR);
 				ERRORANT = ERROR;
 				contadorEpocas++;
 				tEnd = clock();
 				clock_t train_time = tEnd-tStart;
-				cout << "Tiempo de epoca: " << train_time << endl;
-
+				cout << "Tiempo de epoca: " << train_time << endl;				
 			}
+			return response;
 		}	
 
 		/***
@@ -209,7 +219,7 @@ class Network
 		*	cantidadEjemplos: cantidad de ejemplos a testear para no tener que cambiar el vector de prueba	
 		*
 		***/
-		void test_network(vector<ExampleChar> x_test, int cantidadEjemplos)
+		double test_network(vector<ExampleChar> x_test, int cantidadEjemplos)
 		{			
 			double suma = 0;
 			for(int i=0; i<cantidadEjemplos;i++)
@@ -240,7 +250,7 @@ class Network
 				cout << "------------------------------------------------" << endl;
 			}
 			cout << "Presicion: " <<  suma/cantidadEjemplos*100 << "%" <<  endl;
-			//return suma/x_test.size();
+			return suma/cantidadEjemplos*100;
 		}	
 	
 		void mostrar_pesos()
