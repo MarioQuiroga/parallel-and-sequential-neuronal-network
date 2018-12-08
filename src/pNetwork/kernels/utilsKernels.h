@@ -28,12 +28,14 @@ __global__ void copyWeight(T * w, T *** weights, int k, int j, int i, int flag)
 {
 	if (flag == 0)
 	{
+		
 		*w = weights[k][j][i];
+		
 	}
 	else
 	{
 		if (flag == 1)
-		{
+		{			
 			weights[k][j][i] = *w;
 		}		
 	}		

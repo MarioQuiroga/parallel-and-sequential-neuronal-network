@@ -179,7 +179,7 @@ class Network_P
 			// Copy train set to memory device
 			ExampleChar * d_x_train;
 			cudaMalloc((void**) & d_x_train, cantidadEjemplos * sizeof (ExampleChar));
-			cudaMemcpy(&d_x_train, getPointer(x_train), cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice);
+			cudaMemcpy(d_x_train, getPointer(x_train), cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice);
 			double * error;
 			cudaMalloc((void**) & error, sizes_h[sizes_h.size()-1] * sizeof (double));			
 			double * er = (double*) malloc(sizeof(double)*sizes_h[sizes_h.size()-1]);
@@ -253,7 +253,7 @@ class Network_P
 			double suma = 0;
 			for(int i=0; i<cantidadEjemplos;i++)
 			{
-				vector<double> salida = feedForward(x_test[i]);
+				vector<double> salida = feedForward(&x_test[i]);
 				
 				int sal = index_max(salida);
 				
@@ -263,7 +263,7 @@ class Network_P
 					cout << x_test[i].output[j] << "|";
 				}
 				cout << endl;
-				
+				 
 				cout << "Salida obtenida: " << sal << endl;
 				cout.precision(100);
 				for(int j=0;j<salida.size();j++)
@@ -294,12 +294,13 @@ class Network_P
 					for (int i=0; i<sizes_h[k+1]; i++)
 					{
 						double * w_d;
-						cudaMalloc((double **)&w_d, sizeof(double));
+						cudaMalloc((void **)&w_d, sizeof(double));
 						copyWeight<<<1, 1>>>(w_d, weights, k, j, i, 0);
-						double w_h;
-						cudaMemcpy(&w_d, &w_h, sizeof(double), cudaMemcpyDeviceToHost);						
-						cout << w_h << ", ";
-						cudaFree(w_d);
+						void * w_h;
+						cudaMemcpy(w_h, w_d, sizeof(double), cudaMemcpyDeviceToHost);						
+						cout << *(double*) w_h << ", ";
+						
+						//cudaFree(w_d);
 					}				
 					cout << endl;					
 				}				

@@ -42,7 +42,8 @@ void copyWeights(T *** weights, T * w, int * sumas, int * sizes, int numLayers)
 			for (int i = 0; i < sizes[k+1]; ++i)
 			{
 				//print to test
-				//printf("[%i][%i][%i] = [%i]\n", k, j, i, sumas[k] + ((j*sizes[k+1]) + i));
+				printf("[%i][%i][%i] = [%i]    : %f \n", k, j, i, sumas[k] + ((j*sizes[k+1]) + i), w[sumas[k] + ((j*sizes[k+1]) + i)]);
+
 				weights[k][j][i] = w[sumas[k] + ((j*sizes[k+1]) + i)];
 			}
 		}
