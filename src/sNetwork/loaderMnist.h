@@ -8,14 +8,25 @@
 #define swap16(n) (((n&0xFF00)>>8)|((n&0x00FF)<<8))
 #define swap32(n) ((swap16((n&0xFFFF0000)>>16))|((swap16(n&0x0000FFFF))<<16))
 
-typedef unsigned char  byte;
-
 struct ExampleChar {
     std::vector<double> input_data;          // Store the 784 (28x28) pixel color values (0-255) of the digit-image
     std::vector<double> output;             // Store the expected output (e.g: label 5 / output 0,0,0,0,0,1,0,0,0,0)
     int label;                              // Store the handwritten digit in number form
-    ExampleChar() : input_data(std::vector<double>()), output(std::vector<double>(10)), label(0) {}
+    ExampleChar() : output(10, 0), label(-1) {}
 };
+
+std::ostream& operator<<(std::ostream& os, const ExampleChar& ex) {
+	os << "Label: " << ex.label << "\n";
+	os << "Out: ";
+	for (int o = 0; o < ex.output.size() - 1; o++)
+		os << ex.output[o] << ", ";
+	os << ex.output.back() << "\n";
+
+	for(int j = 0; j < ex.input_data.size()-1;j++)
+		os << ex.input_data[j] << " ";
+	os << ex.input_data.back();
+	return os;
+}
 
 void loadData(std::fstream * file_images, std::fstream * file_labels, std::vector<ExampleChar> * data)
 {
@@ -28,50 +39,41 @@ void loadData(std::fstream * file_images, std::fstream * file_labels, std::vecto
 	if(magicNum_images==2051 && magicNum_labels==2049){
 		int itemCount_images = 0, itemCount_labels = 0;
 		int row_count = 0, col_count = 0;
-		file_labels->read((char*)&itemCount_labels, 4);					
-		file_images->read((char*)&itemCount_images, 4);			
+		file_labels->read((char*)&itemCount_labels, 4);
+		file_images->read((char*)&itemCount_images, 4);
 		itemCount_labels = swap32(itemCount_labels);
 		itemCount_images = swap32(itemCount_images);
 		//std::cout <<  itemCount_images << std::endl;
 		//std::cout << itemCount_labels << std::endl;
-		file_images->read((char*)&row_count, 4);			
-		file_images->read((char*)&col_count, 4);				
+		file_images->read((char*)&row_count, 4);
+		file_images->read((char*)&col_count, 4);
 		row_count = swap32(row_count);
 		col_count = swap32(col_count);
 		//std::cout << row_count;
 		//std::cout << " x ";
-		//std::cout << col_count << std::endl; 
-		
+		//std::cout << col_count << std::endl;
+
 		for (int i = 0; i < itemCount_images; i++) {
 			ExampleChar tmpchar = ExampleChar();
-			byte label;
 			for(int r = 0; r < (row_count * col_count); r++) {
-				byte pixel = 1;						
-				int p;
+				unsigned char pixel = 1;
 				// read one byte (0-255 color value of the pixel)
-				file_images->read((char*)&pixel, sizeof(pixel));				
-				p = (double) pixel/1000;
-				tmpchar.input_data.push_back(p);						
-			}			
-			file_labels->read((char*)&label, 1);
-			tmpchar.label = (int) label;
-			for(int i=0; i<tmpchar.output.size();i++){
-				if(i==label){
-					tmpchar.output[i] = 1;
-				}else{
-					tmpchar.output[i] = 0;
-				}						
-			}						
+				file_images->read((char*)&pixel, sizeof(pixel));
+				tmpchar.input_data.push_back(static_cast<double>(pixel) / 255.0);
+			}
+			unsigned char buf;
+			file_labels->read((char*)&buf, sizeof(buf));
+			tmpchar.label = buf;
+			tmpchar.output[tmpchar.label] = 1;
 			data->push_back(tmpchar);
-			
-		}	
-		
-	}else{
+		}
+	}
+	else {
 		if(magicNum_images!=2051) std::cout << "Error, numero magico de imagenes no valido. Verifique la integridad del archivo." << std::endl;
-		if(magicNum_labels!=2049) std::cout << "Error, numero magico de etiquetas no valido. Verifique la integridad del archivo." << std::endl;				
+		if(magicNum_labels!=2049) std::cout << "Error, numero magico de etiquetas no valido. Verifique la integridad del archivo." << std::endl;
 	}								
 }
-	
+
 class MnistLoader
 {
 	public:
@@ -113,65 +115,11 @@ class MnistLoader
 			
 		}
 		
-		void print_data_set(int set)
+		void print_data_set(int set, int start_idx=0, int end_idx=-1)
 		{
-			if(set==0){ // IMPRIMO DATOS DE ENTRENAMIENTO
-				
-				for(int i=0; i<train_data.size(); i++)
-				{	
-					std::cout << "Label: " ;
-					std::cout << train_data[i].label << std::endl;
-					std::cout << "Out: ";
-					for (int o=0; o<10; o++){
-						std::cout << train_data[i].output[o];
-					}
-					std::cout << std::endl;					
-					for(int j=0; j<28;j++)
-					{
-						for(int k=0; k<28; k++)
-						{
-							if(train_data[i].input_data[j*28+k]==0){
-								std::cout << " ";
-							}else{
-								std::cout << "*";
-							}
-							//cout <<  train_data[i].input_data[i*28+j];
-							
-						}
-						std::cout << std::endl;
-					}						
-					std::cout << "----------------------------------" << std::endl;
-					
-				}
-			}else{
-				if(set==1){ // IMPRIMO DATOS DE PRUEBA
-					for(int i=0; i<test_data.size(); i++)
-					{	
-						std::cout << "Label: " ;
-						std::cout << test_data[i].label << std::endl;
-						std::cout << "Out: ";
-						for (int o=0; o<10; o++){
-							std::cout << train_data[i].output[o];
-						}
-						std::cout << std::endl;					
-						for(int j=0; j<28;j++)
-						{
-							for(int k=0; k<28; k++)
-							{
-								if(test_data[i].input_data[j*28+k]==0){
-									std::cout << " ";
-								}else{
-									std::cout << "*";
-								}
-								//cout <<  train_data[i].input_data[i*28+j];
-								
-							}
-							std::cout << std::endl;
-						}						
-						std::cout << "----------------------------------" << std::endl;
-					}
-				}	
-			}
+			auto& data = set == 0 ? train_data : test_data;
+			for (int i = start_idx; i != end_idx && i < data.size(); ++i)
+				std::cout << data[i] << "\n--------------------" << std::endl;
 		}
 };
 #endif
