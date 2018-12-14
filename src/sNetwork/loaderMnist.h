@@ -47,7 +47,7 @@ void loadData(std::fstream * file_images, std::fstream * file_labels, std::vecto
 			byte label;
 			for(int r = 0; r < (row_count * col_count); r++) {
 				byte pixel = 1;						
-				int p;
+				double p;
 				// read one byte (0-255 color value of the pixel)
 				file_images->read((char*)&pixel, sizeof(pixel));				
 				p = (double) pixel/1000;
@@ -55,11 +55,11 @@ void loadData(std::fstream * file_images, std::fstream * file_labels, std::vecto
 			}			
 			file_labels->read((char*)&label, 1);
 			tmpchar.label = (int) label;
-			for(int i=0; i<tmpchar.output.size();i++){
-				if(i==label){
-					tmpchar.output[i] = 1;
+			for(int o=0; o<tmpchar.output.size();o++){
+				if(o==tmpchar.label){
+					tmpchar.output[o] = 1;
 				}else{
-					tmpchar.output[i] = 0;
+					tmpchar.output[o] = 0;
 				}						
 			}						
 			data->push_back(tmpchar);
@@ -151,7 +151,7 @@ class MnistLoader
 						std::cout << test_data[i].label << std::endl;
 						std::cout << "Out: ";
 						for (int o=0; o<10; o++){
-							std::cout << train_data[i].output[o];
+							std::cout << test_data[i].output[o];
 						}
 						std::cout << std::endl;					
 						for(int j=0; j<28;j++)

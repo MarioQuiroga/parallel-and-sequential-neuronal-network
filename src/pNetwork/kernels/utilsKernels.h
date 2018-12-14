@@ -28,7 +28,9 @@ __global__ void copyWeight(T * w, T *** weights, int k, int j, int i, int flag)
 {
 	if (flag == 0)
 	{
-		
+		//printf("11");
+		//printf("%f\n", weights[k][j][i]);
+		//memcpy(w, &weights[k][j][i], sizeof(double));
 		*w = weights[k][j][i];
 		
 	}
@@ -57,5 +59,15 @@ __global__ void copyBias(T * b, T ** bias, int i, int j, int flag)
 	}		
 }
 
+template <typename T>
+__global__ void copyVector(T * o, T ** output, int index, int cantidad)
+{
+	for (int i = 0; i < cantidad; ++i)
+	{
+		o[i] = output[index][i];
+		//printf("%f\n", output[index][i]);
+		//printf("%f\n", o[i]);
+	}
+}
 
 #endif

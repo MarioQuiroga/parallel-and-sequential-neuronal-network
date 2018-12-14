@@ -9,10 +9,12 @@ using namespace std;
 *
 */
 __global__ 
-void outputInLayerInput(double ** ptr, double * ptr_input)
+void outputInLayerInput(double ** ptr, ExampleChar * ptr_input, int index)
 {
 	int i = blockIdx.x;
-	ptr[0][i] = ptr_input[i];
+	//printf("%d||", ptr_input[index].input_data[i]);
+	
+	ptr[0][i] = ptr_input[index].input_data[i];
 }
 
 __global__ 
@@ -40,14 +42,15 @@ void outputNeuron(double ** ptr_outputs,
 *
 */
 __global__ void computeErrorExitLayer(ExampleChar * x_train, 
-				      double ** outputs, 
-				      double ** inputs,
-    				      double ** deltas,  
-				      double * ptr_error, 
-				      int j)
+				    double ** outputs, 
+				    double ** inputs,
+    				double ** deltas,  
+				    double * ptr_error, 
+				    int j,
+				    int e)
 {
 	int i = blockIdx.x;	
-	ptr_error[i] = (x_train[0].output[i] - outputs[j][i]);										
+	ptr_error[i] = (x_train[e].output[i] - outputs[j][i]);										
 	deltas[j][i] = sigmoid_prima(inputs[j][i]) * ptr_error[i];						
 	ptr_error[i] = ptr_error[i] * ptr_error[i]; //Store square of error
 }
@@ -87,4 +90,20 @@ __global__ void updateBias(double ** bias,
 __global__ void copy(double * w_h, double *** w, int l, int j, int i)
 {
 	*w_h = w[l][j][i];
+}
+
+__global__ void printData(ExampleChar * data)
+{
+	for (int i = 0; i < 784; ++i)
+	{
+		printf("%f||", data[0].input_data[i]);
+	}
+	
+}
+void copyExamples(ExampleChar * x, std::vector<ExampleChar> x_train, int cantidad)
+{
+	for (int i = 0; i < cantidad; ++i)
+	{
+		x[i] = x_train[i];
+	}
 }
