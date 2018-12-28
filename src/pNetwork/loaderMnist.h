@@ -52,7 +52,7 @@ void loadData(std::fstream * file_images, std::fstream * file_labels, std::vecto
 				// read one byte (0-255 color value of the pixel)
 				file_images->read((char*)&pixel, sizeof(pixel));				
 				p = (double) pixel;
-				p = p/100;
+				p = p/1000;
 				tmpchar.input_data[r] = p;
 				//tmpchar.input_data.push_back(p);						
 			}			

@@ -3,8 +3,20 @@
 #include <stdio.h>
 #include <cmath>
 #include <vector>
+#include <time.h>
 
 using namespace std; 
+
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+#define kernelCheck() { cudaDeviceSynchronize(); gpuErrchk(cudaPeekAtLastError()); }
+void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess) 
+   {
+      printf("GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
 
 template <typename T>
 T * getPointer(std::vector<T> & v)
@@ -69,5 +81,8 @@ __global__ void copyVector(T * o, T ** output, int index, int cantidad)
 		//printf("%f\n", o[i]);
 	}
 }
+
+
+
 
 #endif

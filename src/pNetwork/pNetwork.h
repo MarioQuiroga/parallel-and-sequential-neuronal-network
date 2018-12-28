@@ -6,7 +6,7 @@
 #include <time.h>
 #include "kernels/initKernels.h"
 #include "kernels/trainKernels.h"
-#include "kernels/utilsKernels.h"
+//#include "kernels/utilsKernels.h"
 #include "../common/utilsCommon.h"
 #include "loaderMnist.h"
 
@@ -77,7 +77,7 @@ class Network_P
 		}*/
 
 		cout << "Alloc memory to device" << endl;		
-		cudaMalloc((double ****)&weights, sizeof(double **) * (numLayers-1));
+		gpuErrchk(cudaMalloc((double ****)&weights, sizeof(double **) * (numLayers-1)));
 		cudaMalloc((double ***)&bias, sizeof(double * ) * numLayers);
 		cudaMalloc((double ***)&inputs, sizeof(double * ) * numLayers);
 		cudaMalloc((double ***)&outputs, sizeof(double * ) * numLayers);
@@ -125,40 +125,25 @@ class Network_P
 	{			
 		// Compute output from input layers		
 		outputInLayerInput<<<sizes_h[0], 1>>>(outputs, input, i);
-		//if(cudaGetLastError()!=cudaSuccess)
-		//{
-			printf("Error outputInLayerInput: %s \n", cudaGetErrorName(cudaGetLastError()));	
-		//}
+		kernelCheck();
 		// Compute output from hidden and output layer
 		for(int l=1; l<sizes_h.size(); l++)	//	Go through layers
 		{
 			outputNeuron<<<sizes_h[l], 1>>>(outputs, inputs, weights, bias, sizes_d, l);
+			kernelCheck();
 		}
-		//if(cudaGetLastError()!=cudaSuccess)
-		//{
-			printf("Error in outputNeuron: %s \n", cudaGetErrorName(cudaGetLastError()));	
-		//}	
 		// Return output 
 		vector<double> res(sizes_h[sizes_h.size()-1]);		
 		double * out_h = (double*)malloc(sizeof(double)* res.size());
 		double * out_d;
-		cudaMalloc((void **) &out_d, sizeof(double)*10);
-		//if(cudaGetLastError()!=cudaSuccess)
-		//{
-			printf("Error in cudaMalloc out_d: %s \n", cudaGetErrorName(cudaGetLastError()));	
-		//}
+		gpuErrchk(cudaMalloc((void **) &out_d, sizeof(double)*10));		
 		copyVector<<<1,1>>>(out_d, outputs, numLayers-1, 10);
-
-		cudaMemcpy(out_h, out_d, sizeof(double) * res.size(), cudaMemcpyDeviceToHost);		
-		//if(cudaGetLastError()!=cudaSuccess)
-		//{
-			printf("Error in cudaMemcpy outFeedforward: %s \n", cudaGetErrorName(cudaGetLastError()));	
-		//}
+		kernelCheck();
+		gpuErrchk(cudaMemcpy(out_h, out_d, sizeof(double) * res.size(), cudaMemcpyDeviceToHost));		
 		for (int j = 0; j < 10; ++j)
 		{
 			res[j] = out_h[j];
-			cout << res[j] << "---";
-
+			//cout << res[j] << "---";
 		}
 		cout << endl;
 		return res;
@@ -168,11 +153,13 @@ class Network_P
 	{			
 		// Compute output from input layer		
 		outputInLayerInput<<<sizes_h[0], 1>>>(outputs, input, i);		
+		kernelCheck();
 
 		// Compute output from hidden and output layer
 		for(int l=1; l<sizes_h.size(); l++)	//	Go through layers
 		{
 			outputNeuron<<<sizes_h[l], 1>>>(outputs, inputs, weights, bias, sizes_d, l);
+			kernelCheck();
 		}
 	}
 	
@@ -200,52 +187,29 @@ class Network_P
 		vector<double> train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
 		{	
 			std::vector<double> response;
-			clock_t tStart, tEnd;
+			time_t first, second;	
 			cout << "Entrenando..." << endl;
 			double ERRORANT = 0;
 			int contadorEpocas = 0;
 			double ERROR = 200.0;		
 			// Copy train set to memory device
 			ExampleChar * d_x_train;
-			cudaMalloc((void**) & d_x_train, cantidadEjemplos * sizeof (ExampleChar));			
-			//if(cudaGetLastError()!=cudaSuccess)
-			//{
-			//	printf("ErrormemTrain: %s \n", cudaGetErrorName(cudaGetLastError()));	
-			//}	
-			/*for (int i = 0; i < 784; ++i)
-			{
-				cout << x_train[0].input_data[i] << "|";
-			}
-			cout << endl;*/
-			// 
+			gpuErrchk(cudaMalloc((void**) & d_x_train, cantidadEjemplos * sizeof (ExampleChar)));						
 			ExampleChar * x = (ExampleChar*) malloc(sizeof(ExampleChar)*cantidadEjemplos);
 			copyExamples(x, x_train, cantidadEjemplos);
-			cudaMemcpy(d_x_train, x, cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice);			
-			//if(cudaGetLastError()!=cudaSuccess)
-			//{
-			//	printf("cudaMemcpy d_x_train: %s \n", cudaGetErrorName(cudaGetLastError()));
-			//}				
+			gpuErrchk(cudaMemcpy(d_x_train, x, cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice));			
 			//printData<<<1,1>>>(d_x_train);			
 			free(x);
 			double * error;
-			cudaMalloc((void**) &error, sizes_h[sizes_h.size()-1] * sizeof (double));			
-			//if(cudaGetLastError()!=cudaSuccess)
-			//{
-			//	printf("cudaMalloc error: %s \n", cudaGetErrorName(cudaGetLastError()));		
-			//}	
+			gpuErrchk(cudaMalloc((void**) &error, sizes_h[sizes_h.size()-1] * sizeof (double)));						
 			double * er = (double*) malloc(sizeof(double)*sizes_h[sizes_h.size()-1]);
 			while(ERROR > errorMinimo && contadorEpocas < epocas)
 			{			
-				tStart = clock();		
+				first = time(NULL);  		
 				ERROR = 0;
 				for(int e=0; e<cantidadEjemplos; e++) // For each example from d_x_train				
 				{					
-					feedForwardTrain(d_x_train, e);	
-					//if(cudaGetLastError()!=cudaSuccess)
-					//{
-			//			printf("feedForwardTrain: %s \n", cudaGetErrorName(cudaGetLastError()));		
-					//}	
-					
+					feedForwardTrain(d_x_train, e);						
 					computeErrorExitLayer<<<sizes_h[numLayers-1], 1>>>(d_x_train, 
 											   outputs,
 											   inputs, 
@@ -253,17 +217,8 @@ class Network_P
 											   error, 
 											   numLayers-1,
 											   e);
-					//if(cudaGetLastError()!=cudaSuccess)
-					//{
-			//			printf("computeErrorExitLayer: %s \n", cudaGetErrorName(cudaGetLastError()));		
-					//}
-					cudaMemcpy(er, error, sizeof(double)*sizes_h[sizes_h.size()-1], cudaMemcpyDeviceToHost);
-					//if(cudaGetLastError()!=cudaSuccess)
-					//{
-			//			printf("memCpy error: %s \n", cudaGetErrorName(cudaGetLastError()));		
-					//}
-					
-					
+					kernelCheck();
+					gpuErrchk(cudaMemcpy(er, error, sizeof(double)*sizes_h[sizes_h.size()-1], cudaMemcpyDeviceToHost));					
 					//cout << "Errores";
 					for(int i=0;i<sizes_h[sizes_h.size()-1];i++)
 					{						
@@ -275,22 +230,13 @@ class Network_P
 					for(int l=numLayers-2; l>=0; l--)
 					{
 						backPropagationError<<<sizes_h[l], 1>>>(weights, deltas, sizes_d, inputs, l);
-						//if(cudaGetLastError()!=cudaSuccess)
-						//{
-			//				printf("backProp error: %s \n", cudaGetErrorName(cudaGetLastError()));		
-						//}						
+						kernelCheck();			
 						// Update Weights						
 						updateWeights<<<sizes_h[l], sizes_h[l+1]>>>(weights, outputs,deltas, rateLearning, l); 
-						//if(cudaGetLastError()!=cudaSuccess)
-						//{
-			//				printf("updateWeights error: %s \n", cudaGetErrorName(cudaGetLastError()));		
-						//}												
+						kernelCheck();									
 						//Update Bias
 						updateBias<<<sizes_h[l], 1>>>(bias, deltas, rateLearning, l);
-						//if(cudaGetLastError()!=cudaSuccess)
-						//{
-			//				printf("updateBias error: %s \n", cudaGetErrorName(cudaGetLastError()));		
-						//}												
+						kernelCheck();									
 					}							
 				}														
 				ERROR *=  0.5 * (1.0/cantidadEjemplos); // Average error of examples
@@ -304,25 +250,12 @@ class Network_P
 				}
 				ERRORANT = ERROR;
 				contadorEpocas++;
-				tEnd = clock();
-				clock_t train_time = tEnd-tStart;
-				cout << "Tiempo de epoca: " << train_time << endl;
+				second = time(NULL);
+				cout << "Tiempo de epoca: " << difftime(second, first) << " segundos." << endl;
 
 			}
-			if(cudaGetLastError()!=cudaSuccess)
-			{
-				printf("EndBackprop: %s \n", cudaGetErrorName(cudaGetLastError()));				
-			}	
-			cudaFree(d_x_train);
-			if(cudaGetLastError()!=cudaSuccess)
-			{
-				printf("cudaFree d_x_train: %s \n", cudaGetErrorName(cudaGetLastError()));		
-			}			
-			cudaFree(error);
-			if(cudaGetLastError()!=cudaSuccess)
-			{
-				printf("cudaFree error: %s \n", cudaGetErrorName(cudaGetLastError()));		
-			}			
+			gpuErrchk(cudaFree(d_x_train));			
+			gpuErrchk(cudaFree(error));
 			free(er);
 			return response;
 		}	
@@ -340,34 +273,16 @@ class Network_P
 		double test_network(vector<ExampleChar> x_test, int cantidadEjemplos)
 		{	
 			ExampleChar * d_x_test;	
-			cudaMalloc((void**) & d_x_test, cantidadEjemplos * sizeof (ExampleChar));
-			if(cudaGetLastError()!=cudaSuccess)
-			{
-				printf("Errormem d_x_test: %s \n", cudaGetErrorName(cudaGetLastError()));	
-			}			
+			gpuErrchk(cudaMalloc((void**) & d_x_test, cantidadEjemplos * sizeof (ExampleChar)));
 			ExampleChar * x = (ExampleChar*) malloc(sizeof(ExampleChar)*cantidadEjemplos);
 			copyExamples(x, x_test, cantidadEjemplos);
-			cudaMemcpy(d_x_test, x, cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice);
-			if(cudaGetLastError()!=cudaSuccess)
-			{
-				printf("Errorcopy Examples Test: %s \n", cudaGetErrorName(cudaGetLastError()));	
-			}
+			gpuErrchk(cudaMemcpy(d_x_test, x, cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice));
 			free(x);			
 			double suma = 0;
 			for(int i=0; i<cantidadEjemplos;i++)
 			{
-				vector<double> salida = feedForward(d_x_test, i);
-				if(cudaGetLastError()!=cudaSuccess)
-				{
-					printf("Error in Feedforward test: %s \n", cudaGetErrorName(cudaGetLastError()));	
-				}
-				
-				for (int h = 0; h < salida.size(); ++h)
-				{
-					cout << salida[h] << endl;
-				}
-				int sal = index_max(salida);
-				
+				vector<double> salida = feedForward(d_x_test, i);				
+				int sal = index_max(salida);				
 				cout << "Salida deseada: " << x_test[i].label << endl;
 				for(int j=0;j<sizes_h[sizes_h.size()-1];j++)
 				{					
@@ -396,7 +311,7 @@ class Network_P
 		void mostrar_pesos()
 		{
 			double * w_d;
-			cudaMalloc((void **)&w_d, sizeof(double));
+			gpuErrchk(cudaMalloc((void **)&w_d, sizeof(double)));
 			double w_h;
 			cout << endl << "Pesos" << endl;
 			for(int k=0; k<numLayers-1; k++)
@@ -409,8 +324,8 @@ class Network_P
 					{
 						
 						copyWeight<<<1, 1>>>(w_d, weights, k, j, i, 0);
-						
-						cudaMemcpy((void*)&w_h, (void*) w_d, sizeof(double), cudaMemcpyDeviceToHost);		
+						kernelCheck();
+						gpuErrchk(cudaMemcpy((void*)&w_h, (void*) w_d, sizeof(double), cudaMemcpyDeviceToHost));		
 						//printf("Error: %s \n", cudaGetErrorName(cudaGetLastError()));				
 						cout << w_h << ", ";						
 					}				
@@ -427,7 +342,7 @@ class Network_P
 			if(file_to_save.is_open())
 			{
 				double * w_d;
-				cudaMalloc((double **)&w_d, sizeof(double));
+				gpuErrchk(cudaMalloc((double **)&w_d, sizeof(double)));
 				double w_h;
 				// Store network structure
 				file_to_save << numLayers << endl;
@@ -443,26 +358,28 @@ class Network_P
 						for(int k=0; k<sizes_h[l+1]; k++)
 						{							
 							copyWeight<<<1, 1>>>(w_d, weights, l, i, k, 0);							
-							cudaMemcpy(&w_h, w_d, sizeof(double), cudaMemcpyDeviceToHost);
+							kernelCheck();
+							gpuErrchk(cudaMemcpy(&w_h, w_d, sizeof(double), cudaMemcpyDeviceToHost));
 							file_to_save << w_h << endl;							
 						}
 					}
 				}
-				cudaFree(w_d);
+				gpuErrchk(cudaFree(w_d));
 				// Store Bias
 				double * b_d;
-				cudaMalloc((double **)&b_d, sizeof(double));
+				gpuErrchk(cudaMalloc((double **)&b_d, sizeof(double)));
 				double b_h;
 				for(int l=0; l<numLayers; l++)
 				{
 					for(int i=0; i<sizes_h[l]; i++)
 					{						
 						copyBias<<<1,1>>>(b_d, bias, l, i, 0);				
-						cudaMemcpy(&b_h, b_d, sizeof(double), cudaMemcpyDeviceToHost);
+						kernelCheck();
+						gpuErrchk(cudaMemcpy(&b_h, b_d, sizeof(double), cudaMemcpyDeviceToHost));
 						file_to_save << b_h << endl;
 					}
 				}			
-				cudaFree(b_d);
+				gpuErrchk(cudaFree(b_d));
 				file_to_save.close();
 				cout << "La red se ha guardado correctamente" << endl;		
 			}
@@ -478,7 +395,7 @@ class Network_P
 			if(file_to_load.is_open())
 			{
 				double * w_d;
-				cudaMalloc((double **)&w_d, sizeof(double));
+				gpuErrchk(cudaMalloc((double **)&w_d, sizeof(double)));
 				double w_h;
 				// Read network structure
 				file_to_load >> numLayers;
@@ -494,26 +411,28 @@ class Network_P
 						for(int i=0; i<sizes_h[l+1]; i++)
 						{								
 							file_to_load >> w_h;							
-							cudaMemcpy(w_d, &w_h, sizeof(double), cudaMemcpyHostToDevice);
+							gpuErrchk(cudaMemcpy(w_d, &w_h, sizeof(double), cudaMemcpyHostToDevice));
 							copyWeight<<<1, 1>>>(w_d, weights, l, j, i, 1);							
+							kernelCheck();
 						}
 					}
 				}
-				cudaFree(w_d);
+				gpuErrchk(cudaFree(w_d));
 				// Read Bias
 				double * b_d;
-				cudaMalloc((double **)&b_d, sizeof(double));
+				gpuErrchk(cudaMalloc((double **)&b_d, sizeof(double)));
 				double b_h;
 				for(int l=0;l<numLayers; l++)
 				{
 					for(int i=0; i<sizes_h[l]; i++)
 					{						
 						file_to_load >> b_h;						
-						cudaMemcpy(b_d, &b_h, sizeof(double), cudaMemcpyHostToDevice);
-						copyBias<<<1, 1>>>(b_d, bias, l, i, 1);													
+						gpuErrchk(cudaMemcpy(b_d, &b_h, sizeof(double), cudaMemcpyHostToDevice));
+						copyBias<<<1, 1>>>(b_d, bias, l, i, 1);									
+						kernelCheck();
 					}
 				}
-				cudaFree(b_d);
+				gpuErrchk(cudaFree(b_d));
 				file_to_load.close();
 				cout << "La red se ha cargado correctamente" << endl;				
 			}
