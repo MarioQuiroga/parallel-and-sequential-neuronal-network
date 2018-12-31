@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <cmath>
 #include <iostream>
 #include <cstdlib>
@@ -9,6 +10,7 @@
 
 int main()
 {
+	system("script sLog.txt");
 	clock_t tStart, tEnd;
 	//Constructor MnistLoader
 	MnistLoader mnist = MnistLoader("../MNIST/train-images.idx3-ubyte", 
@@ -35,12 +37,12 @@ int main()
 	double RATELEARNING = 30;		
 	
 	tStart = clock();
-	net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 6000);	
+	net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60);	
 	tEnd = clock();
 	clock_t train_time = tEnd-tStart;
 	cout << "Tiempo de entrenamiento en red secuencial: " << (train_time/CLOCKS_PER_SEC)/(60*60*24) << endl;
-	//net.test_network(mnist.train_data, 100);
+	//net.test_nlsetwork(mnist.train_data, 100);
 	//net.mostrar_output();
-
+	system("exit");
     return 0;
 }

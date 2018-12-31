@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <cmath>
 #include <iostream>
 #include <cstdlib>
@@ -9,8 +10,11 @@
 #include "common/utilsTime.h"
 //#include "sNetwork/Network.h"
 
+
+
 int main()
 {
+	system("script pLog.txt");
 	//Constructor MnistLoader
 	MnistLoader mnist = MnistLoader("../MNIST/train-images.idx3-ubyte", 
 									"../MNIST/t10k-images.idx3-ubyte", 
@@ -59,5 +63,6 @@ int main()
 	net.save("pNet");
 	//net.mostrar_output();*/
 	net.test_network(mnist.test_data, 10);
+	system("exit");
     return 0;
 }
