@@ -10,11 +10,8 @@
 #include "common/utilsTime.h"
 //#include "sNetwork/Network.h"
 
-
-
 int main()
 {
-	system("script pLog.txt");
 	//Constructor MnistLoader
 	MnistLoader mnist = MnistLoader("../MNIST/train-images.idx3-ubyte", 
 									"../MNIST/t10k-images.idx3-ubyte", 
@@ -33,7 +30,6 @@ int main()
 	Network_P net = Network_P(sizes);	
 	//Network net = Network(sizes);	
 	//net.mostrar_pesos();
-
 	
 	//Network_P net1 = Network_P(sizes);	
 
@@ -48,21 +44,17 @@ int main()
 	double RATELEARNING = 0.07;	
 
 	time_t first, second;
-	first = time(NULL);  
-	//tStart = clock();
-	vector<double> erroes = net.train_backpropagation(mnist.test_data, RATELEARNING, EPOCAS, ERROR, 10);		
-	//tEnd = clock();
-	second = time(NULL);
-	cout << "Tiempo entrenamiento: " << difftime(second, first) << " segundos\n";
 
-	//clock_t train_time = tEnd-tStart;
-	//cout << "Tiempo de entrenamiento en red paralela: " << (train_time/CLOCKS_PER_SEC)/(60*60*24) << endl;
+	first = time(NULL);  
+	vector<double> erroes = net.train_backpropagation(mnist.test_data, RATELEARNING, EPOCAS, ERROR, 10);		
+	second = time(NULL);
+
+	cout << "Tiempo entrenamiento: " << difftime(second, first) << " segundos\n";
 	tm train_time = getTm(difftime(second, first));
 	cout << "tm_struct: " << train_time.tm_hour << ":" << train_time.tm_min << ":" << train_time.tm_sec << endl;
 	net.test_network(mnist.train_data, 10);
 	net.save("pNet");
 	//net.mostrar_output();*/
 	net.test_network(mnist.test_data, 10);
-	system("exit");
     return 0;
 }

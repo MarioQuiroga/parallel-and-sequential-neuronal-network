@@ -2,6 +2,9 @@
 #define utilsTime_h
 #include <time.h>
 
+#define getTime(task, pointer_tm){ time_t first, second; first = time(NULL); task; second = time(NULL);	tm res_time = getTm(difftime(second, first)); *pointer_tm = res_time; }
+#define printTime(task){ time_t first, second; first = time(NULL); task; second = time(NULL);	tm res_time = getTm(difftime(second, first)); std::cout << "Tiempo total: " << res_time.tm_hour << ":"  << res_time.tm_min << ":" << res_time.tm_sec << std::endl; }
+
 tm getTm(int tsegundos)
 {
 	tm response;
