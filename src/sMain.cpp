@@ -7,6 +7,7 @@
 #include <time.h>
 #include "sNetwork/loaderMnist.h"
 #include "sNetwork/Network.h"
+#include "common/utilsTime.h"
 
 int main()
 {
@@ -34,8 +35,9 @@ int main()
 	double ERROR = 0.0001;
 	double RATELEARNING = 30;		
 
-	net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60);	
-	//net.test_network(mnist.train_data, 100);
+	printTime(net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 20));	
+	printTime(net.test_network(mnist.train_data, 10));
 	//net.mostrar_output();
+	net.save("pNet");
     return 0;
 }

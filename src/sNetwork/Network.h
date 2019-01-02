@@ -5,6 +5,7 @@
 #include <vector>
 #include <time.h>
 #include "../common/utilsCommon.h"
+#include "../common/utilsTime.h"
 #include "loaderMnist.h"
 #include "utils.h"
 
@@ -139,7 +140,7 @@ class Network
 		vector<double> train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
 		{	
 			std::vector<double> response;
-			clock_t tStart, tEnd;
+			time_t first, second;
 			cout << "Entrenando..." << endl;
 			double suma; 	
 			double ERRORANT = 0;
@@ -147,7 +148,7 @@ class Network
 			double ERROR = 200.0;	double error;			
 			while(ERROR > errorMinimo && contadorEpocas < epocas)
 			{	
-				tStart = clock();				
+				first = time(NULL);  
 				ERROR = 0;
 				for(int e=0; e<cantidadEjemplos; e++) //	Por cada ejemplo en el conjunto de entrenamiento				
 				{
@@ -202,9 +203,10 @@ class Network
 				response.push_back(ERROR);
 				ERRORANT = ERROR;
 				contadorEpocas++;
-				tEnd = clock();
-				clock_t train_time = tEnd-tStart;
-				cout << "Tiempo de epoca: " << train_time << endl;				
+				second = time(NULL);
+				tm train_time = getTm(difftime(second, first));
+				cout << "Tiempo epoca: " << train_time.tm_hour << ":" << train_time.tm_min << ":" << train_time.tm_sec << endl;
+				
 			}
 			return response;
 		}	

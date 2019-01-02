@@ -8,7 +8,6 @@
 #include "pNetwork/loaderMnist.h"
 #include "pNetwork/pNetwork.h"
 #include "common/utilsTime.h"
-//#include "sNetwork/Network.h"
 
 int main()
 {
@@ -46,7 +45,7 @@ int main()
 	time_t first, second;
 
 	first = time(NULL);  
-	vector<double> erroes = net.train_backpropagation(mnist.test_data, RATELEARNING, EPOCAS, ERROR, 10);		
+	printTime(vector<double> erroes = net.train_backpropagation(mnist.test_data, RATELEARNING, EPOCAS, ERROR, 10));		
 	second = time(NULL);
 
 	cout << "Tiempo entrenamiento: " << difftime(second, first) << " segundos\n";

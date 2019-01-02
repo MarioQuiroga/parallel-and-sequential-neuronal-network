@@ -6,8 +6,9 @@
 #include <time.h>
 #include "kernels/initKernels.h"
 #include "kernels/trainKernels.h"
-//#include "kernels/utilsKernels.h"
+#include "kernels/utilsKernels.h"
 #include "../common/utilsCommon.h"
+#include "../common/utilsTime.h"
 #include "loaderMnist.h"
 
 // Libraries CUDA C++
@@ -187,7 +188,7 @@ class Network_P
 		vector<double> train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
 		{	
 			std::vector<double> response;
-			time_t first, second;	
+			time_t first, second;
 			cout << "Entrenando..." << endl;
 			double ERRORANT = 0;
 			int contadorEpocas = 0;
@@ -205,7 +206,7 @@ class Network_P
 			double * er = (double*) malloc(sizeof(double)*sizes_h[sizes_h.size()-1]);
 			while(ERROR > errorMinimo && contadorEpocas < epocas)
 			{			
-				first = time(NULL);  		
+				first = time(NULL);  
 				ERROR = 0;
 				for(int e=0; e<cantidadEjemplos; e++) // For each example from d_x_train				
 				{					
@@ -251,7 +252,8 @@ class Network_P
 				ERRORANT = ERROR;
 				contadorEpocas++;
 				second = time(NULL);
-				cout << "Tiempo de epoca: " << difftime(second, first) << " segundos." << endl;
+				tm train_time = getTm(difftime(second, first));
+				cout << "Tiempo epoca: " << train_time.tm_hour << ":" << train_time.tm_min << ":" << train_time.tm_sec << endl;
 
 			}
 			gpuErrchk(cudaFree(d_x_train));			
