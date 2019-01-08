@@ -137,11 +137,11 @@ class Network_P
 		vector<double> res(sizes_h[sizes_h.size()-1]);		
 		double * out_h = (double*)malloc(sizeof(double)* res.size());
 		double * out_d;
-		gpuErrchk(cudaMalloc((void **) &out_d, sizeof(double)*10));		
-		copyVector<<<1,1>>>(out_d, outputs, numLayers-1, 10);
+		gpuErrchk(cudaMalloc((void **) &out_d, sizeof(double)*res.size()));		
+		copyVector<<<1,1>>>(out_d, outputs, numLayers-1, res.size());
 		kernelCheck();
 		gpuErrchk(cudaMemcpy(out_h, out_d, sizeof(double) * res.size(), cudaMemcpyDeviceToHost));		
-		for (int j = 0; j < 10; ++j)
+		for (int j = 0; j < res.size(); ++j)
 		{
 			res[j] = out_h[j];
 			//cout << res[j] << "---";
@@ -232,7 +232,9 @@ class Network_P
 					{
 						backPropagationError<<<sizes_h[l], 1>>>(weights, deltas, sizes_d, inputs, l);
 						kernelCheck();			
-						// Update Weights						
+						// Update Weights	
+						//cout << l << ": " << sizes_h[l] << endl;					
+						//cout << l << ": " << sizes_h[l+1] << endl;					
 						updateWeights<<<sizes_h[l], sizes_h[l+1]>>>(weights, outputs,deltas, rateLearning, l); 
 						kernelCheck();									
 						//Update Bias

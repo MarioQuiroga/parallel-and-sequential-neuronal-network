@@ -4,8 +4,8 @@
 #include <cstdlib>
 #include <vector>
 #include <time.h>
-#include "loaderMnist.h"
-#include "Network.h"
+//#include "loaderMnist.h"
+//#include "Network.h"
 
 
 int main(){
@@ -19,6 +19,7 @@ int main(){
 
 	net.save("testFileNet");
 
+	//Network net1 = Network(sizes);	
 	Network net1 = Network(sizes);	
 
 	net1.load("testFileNet");

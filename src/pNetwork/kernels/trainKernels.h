@@ -73,8 +73,10 @@ __global__ void updateWeights(double *** weights, double ** outputs,
 							  double ** deltas, double rateLearning,
 							  int l)
 {
-	int i = blockIdx.x;	
-	int j = threadIdx.x;
+	//int i = blockIdx.x;	
+	//int j = threadIdx.x;
+	int j = blockIdx.x;	
+	int i = threadIdx.x;
 	weights[l][j][i] += (rateLearning * outputs[l][j] * deltas[l+1][i]); 
 }
 

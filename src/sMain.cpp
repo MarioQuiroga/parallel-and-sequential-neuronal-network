@@ -24,7 +24,7 @@ int main()
 	
 	//CREO LA ESTRUCTURA DE LA RED
 	vector<int> sizes;	
-	sizes.push_back(784); sizes.push_back(512); sizes.push_back(100); sizes.push_back(50); sizes.push_back(10);			
+	sizes.push_back(784); sizes.push_back(100); sizes.push_back(15); sizes.push_back(10);			
 	//sizes.push_back(3); sizes.push_back(5); sizes.push_back(2);
 	Network net = Network(sizes);	
 	
@@ -32,12 +32,13 @@ int main()
 	//net.mostrar_output();	
 	//net.test_network(mnist.train_data, 50);
 	int EPOCAS = 6000;
-	double ERROR = 0.0001;
-	double RATELEARNING = 30;		
+	double ERROR = 0.001;
+	double RATELEARNING = 0.5;		
 
-	printTime(net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 20));	
-	printTime(net.test_network(mnist.train_data, 10));
+	printTime(net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60000));	
+	printTime(net.test_network(mnist.train_data, 10000));
+	printTime(net.test_network(mnist.test_data, 10000));
 	//net.mostrar_output();
-	net.save("pNet");
+	net.save("sNet");
     return 0;
 }
