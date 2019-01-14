@@ -44,7 +44,7 @@ class Network_P
 
 	void initNetwork()
 	{
-		srand(time(NULL)); // Seed for rand
+		
 		int sum = 0;
 		// Get Number of Neurons in the network
 		for (int i = 0; i < numLayers; ++i)
@@ -99,6 +99,7 @@ class Network_P
 		// Init sequential weights and bias
 		thrust::device_vector<double> w(sumas_h[sumas_h.size()-1]);
 		thrust::device_vector<double> b(sum);
+		srand(time(NULL)); // Seed for rand
 		for(int i = 0; i<sumas_h[sumas_h.size()-1]; i++)
 		{
 			w[i] = ((1+(double)(rand() % 10))/1000); 
@@ -189,7 +190,7 @@ class Network_P
 		{	
 			std::vector<double> response;
 			time_t first, second;
-			cout << "Entrenando..." << endl;
+			cout << "Training Network..." << endl;
 			double ERRORANT = 0;
 			int contadorEpocas = 0;
 			double ERROR = 200.0;		
@@ -219,6 +220,8 @@ class Network_P
 											   numLayers-1,
 											   e);
 					kernelCheck();
+					updateBias<<<sizes_h[numLayers-1], 1>>>(bias, deltas, rateLearning, numLayers-1);
+					kernelCheck();									
 					gpuErrchk(cudaMemcpy(er, error, sizeof(double)*sizes_h[sizes_h.size()-1], cudaMemcpyDeviceToHost));					
 					//cout << "Errores";
 					for(int i=0;i<sizes_h[sizes_h.size()-1];i++)
@@ -385,11 +388,11 @@ class Network_P
 				}			
 				gpuErrchk(cudaFree(b_d));
 				file_to_save.close();
-				cout << "La red se ha guardado correctamente" << endl;		
+				cout << "Network saved" << endl;		
 			}
 			else
 			{
-				cout << "Error al crear el archivo" << endl;
+				cout << "Error to create file" << endl;
 			}			
 		}
 		
@@ -438,11 +441,11 @@ class Network_P
 				}
 				gpuErrchk(cudaFree(b_d));
 				file_to_load.close();
-				cout << "La red se ha cargado correctamente" << endl;				
+				cout << "Network loaded" << endl;				
 			}
 			else
 			{
-				cout << "Error al abrir el archivo. Verifique la ruta" << endl;
+				cout << "Error to open file" << endl;
 			}
 			
 		}

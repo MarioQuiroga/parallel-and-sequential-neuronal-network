@@ -20,6 +20,6 @@ $(PMAIN): $(PMAIN).cu
 $(SMAIN): $(SMAIN).cpp
 	$(CPP) $(SMAIN).cpp $(CPPFLAGS) -o $(OUTDIR)$(SMAIN)
 
-# Server falta agregar los flags para el uso de std y thread ej: g++ TCPServer.cpp -o server -std=c++11 -pthread
+# Server 
 $(SERVER): $(SERVER).cu
 	$(CUDACC) $(SERVER).cu $(CUDACCFLAGS) -o $(OUTDIR)$(SERVER) 

@@ -85,7 +85,7 @@ class MnistLoader
 					const std::string path_train_labels, 
 					const std::string path_test_labels)
 		{
-			std::cout << "Cargando DataSet MNIST..." << std::endl;
+			std::cout << "Loading DataSet MNIST..." << std::endl;
 			std::fstream file_train_images (path_train_images, std::ifstream::in | std::ifstream::binary);
 			std::fstream file_test_images (path_test_images, std::ifstream::in | std::ifstream::binary);
 			std::fstream file_train_labels (path_train_labels, std::ifstream::in | std::ifstream::binary);

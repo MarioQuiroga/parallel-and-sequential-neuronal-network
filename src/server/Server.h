@@ -41,11 +41,11 @@ public:
 		struct sigaction sa;
 		if(listen(listener, BACKLOG)==-1)
 		{
-			cout << "Cola de mensajes llena" << endl;
+			cout << "full message queue" << endl;
 			return;
 		}
 
-		cout << "Servidor escuchando..." << endl;
+		cout << "Server listening..." << endl;
 		
 		int connect;
 		while(1)
@@ -59,16 +59,16 @@ public:
 	        }
 			struct sockaddr_storage client;
 			unsigned int addres_size = sizeof(client);
-			cout << "Esperando al cliente..." << endl;
+			cout << "Waiting Client..." << endl;
 			// Create socket client			
 			try
 			{
 				connect = accept(listener, (struct sockaddr*)&client, &addres_size);
 				if(connect == -1)
 				{
-					cout << "No se pudo abrir socket secundario" << endl;
+					cout << "secondary socket could not be opened" << endl;
 				}
-				cout << "Atendiendo al cliente " << countId << endl;
+				cout << "Serving the client " << countId << endl;
 				if (!fork()) 
 				{ // Este es el proceso hijo
 	                close(listener); // El hijo no necesita este descriptor
@@ -81,7 +81,7 @@ public:
 			}
 			catch(exception& e) 
 			{
-				cout << "Problemas en connect." << endl;
+				cout << "Problems in connect." << endl;
 		    	cout << e.what() << endl;
 			}					
 

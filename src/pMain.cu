@@ -38,22 +38,14 @@ int main()
 	//net.mostrar_pesos(); 
 	//printf("Error: %s \n", cudaGetErrorName(cudaGetLastError()));
 	//net.test_network(mnist.train_data, 50);
-	int EPOCAS = 6000;
+	int EPOCAS = 1000;
 	double ERROR = 0.001;
 	double RATELEARNING = 0.5;	
 
-	time_t first, second;
-
-	first = time(NULL);  
+	
 	printTime(vector<double> erroes = net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60000));		
-	second = time(NULL);
-
-	cout << "Tiempo entrenamiento: " << difftime(second, first) << " segundos\n";
-	tm train_time = getTm(difftime(second, first));
-	cout << "tm_struct: " << train_time.tm_hour << ":" << train_time.tm_min << ":" << train_time.tm_sec << endl;
 	printTime(net.test_network(mnist.train_data, 10000));
-	net.save("pNet");
-	//net.mostrar_output();*/
 	printTime(net.test_network(mnist.test_data, 10000));
+	net.save("../models/pNet1");
     return 0;
 }

@@ -29,7 +29,7 @@ int main()
 	//net1.mostrar_pesos();
 	
 	//DATOS PARA EL ENTRENAMIENTO
-	vector<ExampleChar> datos = std::vector<ExampleChar>();	
+	/*vector<ExampleChar> datos = std::vector<ExampleChar>();	
 	ExampleChar tmpchar1 = ExampleChar();
 	ExampleChar tmpchar2 = ExampleChar();
 	ExampleChar tmpchar3 = ExampleChar();
@@ -63,7 +63,7 @@ int main()
 	printTime(net.train_backpropagation(datos, RATELEARNING, EPOCAS, ERROR, 4));	
 	
 	net.test_network(datos, 4);
-	net.save("xor");
+	net.save("xor");*/
 
     return 0;
 	

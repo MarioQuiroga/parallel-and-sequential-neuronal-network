@@ -5,7 +5,7 @@
 #include <vector>
 #include <time.h>
 //#include "loaderMnist.h"
-//#include "Network.h"
+#include "../src/sNetwork/Network.h"
 
 
 int main(){
@@ -15,16 +15,16 @@ int main(){
 	sizes.push_back(2);	sizes.push_back(5); sizes.push_back(2);			
 	Network net = Network(sizes);	
 	
-	net.mostrar_pesos();
+	//net.mostrar_pesos();
 
-	net.save("testFileNet");
+	//net.save("testFileNet");
 
 	//Network net1 = Network(sizes);	
-	Network net1 = Network(sizes);	
+	//Network net1 = Network(sizes);	
 
-	net1.load("testFileNet");
+	//net1.load("testFileNet");
 
-	net1.mostrar_pesos();
+	net.mostrar_pesos();
 	
 	//DATOS PARA EL ENTRENAMIENTO
 	/*vector<ExampleChar> datos;	

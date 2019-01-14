@@ -51,8 +51,7 @@ void loadData(std::fstream * file_images, std::fstream * file_labels, std::vecto
 				double p;
 				// read one byte (0-255 color value of the pixel)
 				file_images->read((char*)&pixel, sizeof(pixel));				
-				p = (double) pixel;
-				p = p/1000;
+				p = (double) pixel/1000;
 				tmpchar.input_data[r] = p;
 				//tmpchar.input_data.push_back(p);						
 			}			
@@ -88,7 +87,7 @@ class MnistLoader
 					const std::string path_train_labels, 
 					const std::string path_test_labels)
 		{
-			std::cout << "Cargando DataSet MNIST..." << std::endl;
+			std::cout << "Loading DataSet MNIST..." << std::endl;
 			std::fstream file_train_images (path_train_images, std::ifstream::in | std::ifstream::binary);
 			std::fstream file_test_images (path_test_images, std::ifstream::in | std::ifstream::binary);
 			std::fstream file_train_labels (path_train_labels, std::ifstream::in | std::ifstream::binary);

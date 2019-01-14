@@ -59,7 +59,7 @@ public:
         }
     	catch(exception& e) 
     	{
-    		cout << "Cliente desconectado." << endl;
+    		cout << "Client disconnected." << endl;
         	cout << e.what() << endl;
     	}		
 	}	

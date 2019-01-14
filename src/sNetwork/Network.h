@@ -141,7 +141,7 @@ class Network
 		{	
 			std::vector<double> response;
 			time_t first, second;
-			cout << "Entrenando..." << endl;
+			cout << "Training Network..." << endl;
 			double suma; 	
 			double ERRORANT = 0;
 			int contadorEpocas = 0;
@@ -319,11 +319,11 @@ class Network
 					}
 				}			
 				file_to_save.close();
-				cout << "La red se ha guardado correctamente" << endl;		
+				cout << "Network saved" << endl;		
 			}
 			else
 			{
-				cout << "Error al crear el archivo" << endl;
+				cout << "Error to create file" << endl;
 			}			
 		}
 		
@@ -358,11 +358,11 @@ class Network
 					}
 				}
 				file_to_load.close();
-				cout << "La red se ha cargado correctamente" << endl;				
+				cout << "Network loaded" << endl;				
 			}
 			else
 			{
-				cout << "Error al abrir el archivo. Verifique la ruta" << endl;
+				cout << "Error to open file" << endl;
 			}
 			
 		}
