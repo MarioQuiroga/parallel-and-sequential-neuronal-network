@@ -32,20 +32,20 @@ int main()
 	
 	//Network_P net1 = Network_P(sizes);	
 
-	//net.load("pNet");
+	//net.load("../models/pNet1_2");
 
 	//net1.mostrar_pesos();
 	//net.mostrar_pesos(); 
 	//printf("Error: %s \n", cudaGetErrorName(cudaGetLastError()));
 	//net.test_network(mnist.train_data, 50);
 	int EPOCAS = 1000;
-	double ERROR = 0.001;
+	double ERROR = 0.003;
 	double RATELEARNING = 0.5;	
-
+	cout << "RATELEARNING: " << RATELEARNING << endl;
 	
 	printTime(vector<double> erroes = net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60000));		
 	printTime(net.test_network(mnist.train_data, 10000));
 	printTime(net.test_network(mnist.test_data, 10000));
-	net.save("../models/pNet1");
+	net.save("../models/pNet3");
     return 0;
 }

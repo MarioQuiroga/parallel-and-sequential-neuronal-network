@@ -31,14 +31,14 @@ int main()
 	//net.mostrar_pesos();  
 	//net.mostrar_output();	
 	//net.test_network(mnist.train_data, 50);
-	int EPOCAS = 6000;
-	double ERROR = 0.001;
+	int EPOCAS = 600;
+	double ERROR = 0.004;
 	double RATELEARNING = 0.5;		
-
+	cout << "RATELEARNING: " << RATELEARNING << endl;
 	printTime(net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60000));	
 	printTime(net.test_network(mnist.train_data, 10000));
 	printTime(net.test_network(mnist.test_data, 10000));
 	//net.mostrar_output();
-	net.save("sNet");
+	net.save("sNet_2");
     return 0;
 }
