@@ -9,7 +9,8 @@
 #include "kernels/utilsKernels.h"
 #include "../common/utilsCommon.h"
 #include "../common/utilsTime.h"
-#include "loaderMnist.h"
+//#include "../common/ExampleChar.h"
+#include "../common/loaderMnist.h"
 
 // Libraries CUDA C++
 #include <thrust/host_vector.h>

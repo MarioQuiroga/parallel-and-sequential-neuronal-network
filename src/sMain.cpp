@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <vector>
 #include <time.h>
-#include "sNetwork/loaderMnist.h"
+#include "common/loaderMnist.h"
 #include "sNetwork/Network.h"
 #include "common/utilsTime.h"
 
@@ -15,11 +15,13 @@ int main()
 	MnistLoader mnist = MnistLoader("../MNIST/train-images.idx3-ubyte", 
 									"../MNIST/t10k-images.idx3-ubyte", 
 									"../MNIST/train-labels.idx1-ubyte", 
-									"../MNIST/t10k-labels.idx1-ubyte");
+									"../MNIST/t10k-labels.idx1-ubyte",
+									784,
+									10);
 	
 	//METODO PARA IMPRIMIR TODOS LOS DATOS: 0 IMPRIME DATOS DE ENTRENAMIENTO, 
 	//										1 IMPRIME DATOS DE PRUEBA
-	//mnist.print_data_set(1);	
+	mnist.print_data_set(0, 10);	
 	//cout << mnist.train_data.size() << endl;
 	
 	//CREO LA ESTRUCTURA DE LA RED
@@ -35,9 +37,9 @@ int main()
 	double ERROR = 0.004;
 	double RATELEARNING = 0.5;		
 	cout << "RATELEARNING: " << RATELEARNING << endl;
-	printTime(net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60000));	
-	printTime(net.test_network(mnist.train_data, 10000));
-	printTime(net.test_network(mnist.test_data, 10000));
+	printTime(net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60));	
+	printTime(net.test_network(mnist.train_data, 10));
+	printTime(net.test_network(mnist.test_data, 10));
 	//net.mostrar_output();
 	net.save("sNet_2");
     return 0;

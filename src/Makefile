@@ -7,10 +7,11 @@ CPPFLAGS=-std=c++11
 CUDACCFLAGS=-std c++11 --expt-extended-lambda -x cu --gpu-architecture compute_35 -lcuda -lcudart
 OUTDIR=../bin/
 
-#all: $(SMAIN)S
-all: $(PMAIN) $(SMAIN)
+#all: $(SMAIN)
+#all: $(PMAIN) $(SMAIN)
 #all: $(PMAIN) $(SMAIN) $(SERVER)
-
+all: $(SERVER)
+	
 #COMPILE
 # Paralel Network
 $(PMAIN): $(PMAIN).cu
@@ -20,6 +21,7 @@ $(PMAIN): $(PMAIN).cu
 $(SMAIN): $(SMAIN).cpp
 	$(CPP) $(SMAIN).cpp $(CPPFLAGS) -o $(OUTDIR)$(SMAIN)
 
+#$(CUDACC) $(SERVER).cu $(CUDACCFLAGS) -o $(OUTDIR)$(SERVER) 
 # Server 
-$(SERVER): $(SERVER).cu
-	$(CUDACC) $(SERVER).cu $(CUDACCFLAGS) -o $(OUTDIR)$(SERVER) 
+$(SERVER): $(SERVER).cpp
+	$(CPP) $(SERVER).cpp $(CPPFLAGS) -o $(OUTDIR)$(SERVER) 

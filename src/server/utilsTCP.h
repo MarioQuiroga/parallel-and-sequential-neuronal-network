@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>
+#include <vector>
 
 using namespace std;
 
@@ -67,10 +68,11 @@ T writeNum(int socket, T * n)
 template<typename T>
 void writeVector(int socket, std::vector<T> input)
 {
-	writeNum(socket, input.size());
+	int size = (int)input.size();
+	writeNum(socket, &size);
 	for (int i = 0; i < input.size(); ++i)
 	{
-		writeNum(socket, input[i]);
+		writeNum(socket, &input[i]);
 	}
 }
 
@@ -108,11 +110,37 @@ void writeLine(int socket, std::string line)
 	char * c = new char[line.length()];
 	strcpy(c, line.c_str());
 	int n = line.length();
-	if (send(socket, &n, sizeof(int), 0) == -1)
-		perror("Error in send");
-
+	writeNum(socket, &n);
 	if (send(socket, c, sizeof(char)*n, 0) == -1)
 		perror("Error in send");
+}
+
+void writeModel(int socket, vector<vector<vector<double>>> w, vector<vector<double>> b, vector<int> sizes)
+{
+	std::vector<double> response;
+	response.push_back(sizes.size());	
+	for (int i = 0; i < sizes.size(); i++)
+	{
+		response.push_back(sizes[i]);
+	}
+	for (int i = 0; i < w.size(); i++)
+	{
+		for (int j = 0; j < w[i].size(); j++)
+		{
+			for (int k = 0; k < w[i][j].size(); k++)
+			{
+				response.push_back(w[i][j][k]);
+			}
+		}
+	}
+	for (int j = 0; j < b.size(); j++)
+	{
+		for (int k = 0; k < b[j].size(); k++)
+		{
+			response.push_back(b[j][k]);
+		}
+	}	
+	writeVector(socket, response);
 }
 
 #endif

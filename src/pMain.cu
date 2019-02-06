@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <vector>
 #include <time.h>
-#include "pNetwork/loaderMnist.h"
+#include "common/loaderMnist.h"
 #include "pNetwork/pNetwork.h"
 #include "common/utilsTime.h"
 

@@ -6,7 +6,9 @@
 #include <time.h>
 #include "../common/utilsCommon.h"
 #include "../common/utilsTime.h"
-#include "loaderMnist.h"
+//#include "../common/ExampleChar.h"
+#include "../common/loaderMnist.h"
+
 #include "utils.h"
 
 
@@ -76,7 +78,7 @@ class Network
 		*	Calcula la salida de la red para una entrada					
 		*
 		**/
-		vector<double> feedForward(vector<double> & input)		
+		vector<double> feedForward(double * input)		
 		{			
 			for(int i=0; i<outputs[0].size(); i++) //Calcular el output de la capa de entrada
 			{
@@ -119,7 +121,7 @@ class Network
 			initNetwork();			
 		}
 		
-		int recogn(vector<double> & input)
+		int recogn(double * input)
 		{
 			vector<double> salida = feedForward(input);			
 			int sal = index_max(salida);
@@ -231,18 +233,18 @@ class Network
 				int sal = index_max(salida);
 				
 				cout << "Salida deseada: " << x_test[i].label << endl;
-				for(int j=0;j<sizes[sizes.size()-1];j++)
+				/*for(int j=0;j<sizes[sizes.size()-1];j++)
 				{					
 					cout << x_test[i].output[j] << "|";
 				}
-				cout << endl;
+				cout << endl;*/
 				
 				cout << "Salida obtenida: " << sal << endl;
 				cout.precision(100);
-				for(int j=0;j<salida.size();j++)
+				/*for(int j=0;j<salida.size();j++)
 				{				
 					cout << salida[j] << endl;
-				}				
+				}*/				
 				cout << endl;
 				
 				if (sal == x_test[i].label)
@@ -251,7 +253,7 @@ class Network
 				}
 				cout << "------------------------------------------------" << endl;
 			}
-			cout << "Presicion: " <<  suma/cantidadEjemplos*100 << "%" <<  endl;
+			cout << "Precision: " <<  suma/cantidadEjemplos*100 << "%" <<  endl;
 			return suma/cantidadEjemplos*100;
 		}	
 	
@@ -365,5 +367,14 @@ class Network
 				cout << "Error to open file" << endl;
 			}
 			
+		}
+		vector<vector<double>> getBias()
+		{
+			return bias;
+		}
+
+		vector<vector<vector<double>>> getWeights()
+		{
+			return weights;
 		}
 };
