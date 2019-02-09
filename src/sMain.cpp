@@ -12,10 +12,10 @@
 int main()
 {
 	//Constructor MnistLoader
-	MnistLoader mnist = MnistLoader("../MNIST/train-images.idx3-ubyte", 
-									"../MNIST/t10k-images.idx3-ubyte", 
-									"../MNIST/train-labels.idx1-ubyte", 
-									"../MNIST/t10k-labels.idx1-ubyte",
+	MnistLoader mnist = MnistLoader("../MNIST/data/train-images.idx3-ubyte", 
+									"../MNIST/data/t10k-images.idx3-ubyte", 
+									"../MNIST/data/train-labels.idx1-ubyte", 
+									"../MNIST/data/t10k-labels.idx1-ubyte",
 									784,
 									10);
 	

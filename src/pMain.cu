@@ -12,40 +12,47 @@
 int main()
 {
 	//Constructor MnistLoader
-	MnistLoader mnist = MnistLoader("../MNIST/train-images.idx3-ubyte", 
-									"../MNIST/t10k-images.idx3-ubyte", 
-									"../MNIST/train-labels.idx1-ubyte", 
-									"../MNIST/t10k-labels.idx1-ubyte");
-	
-	//METODO PARA IMPRIMIR TODOS LOS DATOS: 0 IMPRIME DATOS DE ENTRENAMIENTO, 
-	//										1 IMPRIME DATOS DE PRUEBA
-	//mnist.print_data_set(0, 10);	
-	//cout << mnist.train_data.size() << endl;
-	
-	//CREO LA ESTRUCTURA DE LA RED
+	MnistLoader mnist = MnistLoader("../MNIST/data/train-images.idx3-ubyte", 
+									"../MNIST/data/tdata/10k-images.idx3-ubyte", 
+									"../MNIST/data/train-labels.idx1-ubyte", 
+									"../MNIST/data/t10k-labels.idx1-ubyte");
+
+	int typeNet = 0; // 0 PARALLEL, 1 SEQUENTIAL
 	vector<int> sizes;	
-	sizes.push_back(784); sizes.push_back(100); sizes.push_back(15); sizes.push_back(10);			
-	//sizes.push_back(3); sizes.push_back(5); sizes.push_back(2);;			
-	Network_P net = Network_P(sizes);	
-	//Network net = Network(sizes);	
-	//net.mostrar_pesos();
-	
-	//Network_P net1 = Network_P(sizes);	
-
-	//net.load("../models/pNet1_2");
-
-	//net1.mostrar_pesos();
-	//net.mostrar_pesos(); 
-	//printf("Error: %s \n", cudaGetErrorName(cudaGetLastError()));
-	//net.test_network(mnist.train_data, 50);
-	int EPOCAS = 1000;
+	sizes.push_back(784); sizes.push_back(100); sizes.push_back(10);			
+	if(typeNet == 0)
+	{
+		Network_P net = Network_P(sizes);		
+	}
+	else
+	{
+		Network net = Network(sizes);		
+	}	
+	int EPOCAS = 500;
 	double ERROR = 0.003;
-	double RATELEARNING = 0.5;	
-	cout << "RATELEARNING: " << RATELEARNING << endl;
+	double RATELEARNING = 0.5;
+	int ExTrain = 60000;
+	int ExTest = 10000;		
+
 	
-	printTime(vector<double> erroes = net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60000));		
-	printTime(net.test_network(mnist.train_data, 10000));
+	cout << "Datos de la Red" << endl;
+	cout << "Estructura: ";
+	for (int i = 0; i < sizes.size(); ++i)
+	{
+		cout << sizes[i] << ", ";
+	}
+	cout << endl;
+	cout << "Velocidad de Aprendizaje: " << RATELEARNING << endl;
+	cout << "Error min: " << ERROR << endl;
+	cout << "Tipo Algoritmo: "Secuencial << endl;
+	cout << "Ejemplos en entrenamiento: " << ExTrain	<< "	Ejemplos de prueba: " << ExTest << endl;
+	cout << "Cantidad de epocas: " << EPOCAS << endl;
+
+	vector<double> errores;
+	printTime(errores = net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, 60000));		
+	//printTime(net.test_network(mnist.train_data, 10000));
 	printTime(net.test_network(mnist.test_data, 10000));
-	net.save("../models/pNet3");
+	cout << "Error promedio alcanzado: " << errores[errores.size()-1] << endl;
+	net.save("../models/pNet_0");
     return 0;
 }

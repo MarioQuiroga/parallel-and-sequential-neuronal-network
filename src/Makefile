@@ -9,8 +9,8 @@ OUTDIR=../bin/
 
 #all: $(SMAIN)
 #all: $(PMAIN) $(SMAIN)
-#all: $(PMAIN) $(SMAIN) $(SERVER)
-all: $(SERVER)
+all: $(PMAIN) $(SMAIN) $(SERVER)
+#all: $(SERVER)
 	
 #COMPILE
 # Paralel Network

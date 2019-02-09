@@ -1,6 +1,7 @@
 #ifndef serverThread_h
 #define serverThread_h
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <string.h>
 #include <arpa/inet.h>
@@ -14,6 +15,7 @@
 #include "utilsTCP.h"
 #include <vector>
 #include <time.h>
+#include <dirent.h>
 // Networks
 //#include "../pNetwork/pNetwork.h"
 #include "../common/loaderMnist.h"
@@ -59,8 +61,11 @@ public:
 						break;
 				case 4: saveModel(socket);
 						break;
+				case 5: getModels(socket);
+						break;
 				default: close(socket);
 			}
+			close(socket);
         }
     	catch(exception& e) 
     	{
@@ -76,17 +81,49 @@ public:
 		cout << "Client disconected." << endl;
 		kill(pid, SIGKILL);
 		//waitpid(childProcess, &status, WNOHANG);
-		close(socket);
 	}
 
 	void recnognition(int socket)
 	{
-		/*std::vector<double> input;
-		readVector(socket, &input);
-		Network net = Network(sizes);	
-		net.load(PATH_TO_NETWORK);	
-		int n = net.recogn(input);
-		writeNum(socket, n);*/
+		string name;
+		readLine(socket, &name);
+		std::vector<double> in;
+		readVector(socket, &in);
+		double * input = (double *) malloc(sizeof(double) * (in.size()-1));
+		for (int i = 1; i < in.size(); i++)
+		{
+			input[i-1] = in[i];
+		}
+		int type_network;
+		readNum(socket, &type_network);
+		std::vector<int> sizes;
+		ifstream file("../models/" + name);
+		int layers;
+		file >> layers;
+		for (int i = 0; i < layers; i++)
+		{
+			int n;
+			file >> n;
+			sizes.push_back(n);
+		}
+		if(type_network==0)
+		{ // SEQUENTIAL MODEL
+			Network net = Network(sizes);	
+			net.load("../models/" + name);	
+			int n = net.recogn(input);
+			writeNum(socket, &n);
+		}else
+		{
+			if(type_network==1)
+			{ // PARALLEL MODEL
+				Network net = Network(sizes);
+				//Network_P net = Network_P(sizes);	
+				net.load("../models/" + name);	
+				int n = net.recogn(input);
+				writeNum(socket, &n);
+			}
+		}
+		free(input);	
 	}
 
 	void train(int socket)
@@ -114,10 +151,10 @@ public:
 		int dataSources;
 		readNum(socket, &dataSources);		
 		if(dataSources==1){
-			mnist = MnistLoader("../MNIST/train-images.idx3-ubyte", 
-								"../MNIST/t10k-images.idx3-ubyte", 
-								"../MNIST/train-labels.idx1-ubyte", 
-								"../MNIST/t10k-labels.idx1-ubyte", 
+			mnist = MnistLoader("../MNIST/data/train-images.idx3-ubyte", 
+								"../MNIST/data/t10k-images.idx3-ubyte", 
+								"../MNIST/data/train-labels.idx1-ubyte", 
+								"../MNIST/data/t10k-labels.idx1-ubyte", 
 								sizes[0],
 								sizes[sizes.size()-1]);
 		}else{
@@ -128,7 +165,7 @@ public:
 		
 		// create and train network
 		if(type_network==0)
-		{
+		{ // SEQUENTIAL MODEL
 			Network net = Network(sizes);
 			tm t_train;		
 			tm t_test;
@@ -159,7 +196,7 @@ public:
 			writeModel(socket, net.getWeights(), net.getBias(), sizes);
 		}
 		else
-		{
+		{ // PARALEL MODEL
 			if(type_network==1)
 			{
 				//Network_P net = Network_P(sizes);
@@ -244,12 +281,79 @@ public:
 
 	void saveModel(int socket)
 	{
+    	ifstream file_in("../logs/count");
+    	int count; 
+    	file_in >> count;
+    	file_in.close();
+    	ofstream file_out("../logs/count");
+    	file_out << count + 1; 
+    	cout << count << endl;
+    	file_out.close();
+		string name;
+		readLine(socket, &name);
+		std::vector<double> model;
+		readVector(socket, &model);		
 		string log;
 		readLine(socket, &log);
-		std::vector<double> model;
-		readVector(socket, &model);
-		ofstream file_log ("logs/", ios::binary);
-		ofstream file_model ("models/", ios::binary);
+		cout << log << endl;
+		
+		// openFiles
+		cout << name << endl;
+		string logs("../logs/");
+		string models("../models/");
+		logs = logs + name;
+		models = models + name;
+		cout << logs << endl;
+		cout << models<< endl;
+		std::ofstream file_log(logs, std::ofstream::out);
+		std::ofstream file_model(models, std::ofstream::out);
+		file_log << log;
+		for (int i = 0; i < model.size(); i++)
+		{
+			file_model << model[i] << endl;
+		}
+		file_model.close();
+		file_log.close();
+	}
+	void getModels(int socket)
+	{
+    	DIR *ID_Directorio_logs;
+		dirent *Directorio_logs;
+		ID_Directorio_logs = opendir("../logs");
+		//Directorio_logs = readdir(ID_Directorio_logs);		
+
+		DIR *dir;
+		dirent *ent;
+		//for(int i = 0; i < Directorio_logs->d_reclen; i++)
+		int c = 0;
+		std::vector<string> names;
+		std::vector<string> logs;
+		while (ent = readdir(ID_Directorio_logs))
+		{	
+
+			string name(ent->d_name);
+			if(name.compare("..")!=0 & name.compare(".")!=0){
+				names.push_back(name);
+				string res_log("");
+				string path("../logs/" + name);
+				ifstream file_log(path);
+				string linea;
+				while(getline(file_log, linea))
+				{
+					res_log = res_log + linea + "\n";
+				}		
+				logs.push_back(res_log);	
+			}				
+		}
+		int size = names.size();
+		writeNum(socket, &size);
+		for (int i = 0; i < names.size(); i++)
+		{
+//cout << names[i] << endl;
+			writeLine(socket, names[i]);
+			writeLine(socket, logs[i]);
+		}		
+		closedir (ID_Directorio_logs);
 	}
 };
 #endif

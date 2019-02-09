@@ -232,14 +232,14 @@ class Network
 				
 				int sal = index_max(salida);
 				
-				cout << "Salida deseada: " << x_test[i].label << endl;
+				//cout << "Salida deseada: " << x_test[i].label << endl;
 				/*for(int j=0;j<sizes[sizes.size()-1];j++)
 				{					
 					cout << x_test[i].output[j] << "|";
 				}
 				cout << endl;*/
 				
-				cout << "Salida obtenida: " << sal << endl;
+				//cout << "Salida obtenida: " << sal << endl;
 				cout.precision(100);
 				/*for(int j=0;j<salida.size();j++)
 				{				
@@ -251,10 +251,10 @@ class Network
 				{
 					suma++;
 				}
-				cout << "------------------------------------------------" << endl;
+				//cout << "------------------------------------------------" << endl;
 			}
 			cout << "Precision: " <<  suma/cantidadEjemplos*100 << "%" <<  endl;
-			return suma/cantidadEjemplos*100;
+			return suma/cantidadEjemplos;
 		}	
 	
 		void mostrar_pesos()
