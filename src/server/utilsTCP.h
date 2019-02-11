@@ -46,7 +46,7 @@ void bind_to_port(int socket, int port)
 }
 
 template<typename T>
-T readNum(int socket, T * n)
+void readNum(int socket, T * n)
 {
 	if (recv(socket, n, sizeof(T), 0) == -1) 
 	{
@@ -56,7 +56,7 @@ T readNum(int socket, T * n)
 }
 
 template<typename T>
-T writeNum(int socket, T * n)
+void writeNum(int socket, T * n)
 {
 	if (send(socket, n, sizeof(T), 0) == -1) 
 	{

@@ -534,4 +534,63 @@ class Network_P
 			}
 			
 		}
+
+		int recogn(double * input)
+		{
+			vector<double> salida = feedForward(&input, 0);			
+			int sal = index_max(salida);
+			return sal;;
+		}
+
+		vector<vector<double>> getBias()
+		{
+			vector<vector<double>> bias_h;
+			// Store Bias
+			double * b_d;
+			gpuErrchk(cudaMalloc((double **)&b_d, sizeof(double)));
+			double b_h;
+			for(int l=0; l<numLayers; l++)
+			{
+				vector<double> bias_h_l;
+				for(int i=0; i<sizes_h[l]; i++)
+				{		
+
+					copyBias<<<1,1>>>(b_d, bias, l, i, 0);				
+					kernelCheck();
+					gpuErrchk(cudaMemcpy(&b_h, b_d, sizeof(double), cudaMemcpyDeviceToHost));
+					bias_h_l.push_back(b_h);
+				}
+				bias_h.push_back(bias_h_l);
+			}			
+			gpuErrchk(cudaFree(b_d));
+			return bias_h;
+		}
+
+		vector<vector<vector<double>>> getWeights()
+		{
+			vector<vector<vector<double>>> weights_h;
+			double * w_d;
+			gpuErrchk(cudaMalloc((double **)&w_d, sizeof(double)));
+			double w_h;
+			// Store Weights
+			for(int l=0;l<numLayers-1; l++) // For each layer
+			{
+				vector<vector<double>> weights_h_l;
+				for(int i=0; i<sizes_h[l]; i++) // For each neuron
+				{
+					vector<double> weights_h_i;
+					for(int k=0; k<sizes_h[l+1]; k++)
+					{							
+						copyWeight<<<1, 1>>>(w_d, weights, l, i, k, 0);							
+						kernelCheck();
+						gpuErrchk(cudaMemcpy(&w_h, w_d, sizeof(double), cudaMemcpyDeviceToHost));
+						weights_h_i.push_back(w_h);
+					}
+					weights_h_l.push_back(weights_h_i);
+				}
+				weights_h.push_back(weights_h_l);
+			}
+			gpuErrchk(cudaFree(w_d));
+			return weights_h;
+		}
 };

@@ -6,10 +6,6 @@
 
 using namespace std; 
 
-/*struct responseRec(){
-
-};*/
-
 /**
 *	DEVUELVE LA POSICIÓN DEL MAYOR ELEMENTO DE UN VECTOR
 *

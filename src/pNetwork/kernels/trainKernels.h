@@ -4,6 +4,7 @@
 #include <vector>
 #include "utilsKernels.h"
 #include "../../common/utilsCommon.h"
+#include "../../common/ExampleChar.h"
 
 using namespace std; 
 /**

@@ -17,7 +17,7 @@
 #include <time.h>
 #include <dirent.h>
 // Networks
-//#include "../pNetwork/pNetwork.h"
+#include "../pNetwork/pNetwork.h"
 #include "../common/loaderMnist.h"
 #include "../common/ExampleChar.h"
 #include "../sNetwork/Network.h"
@@ -107,15 +107,15 @@ public:
 			sizes.push_back(n);
 		}
 		if(type_network==0)
-		{ // SEQUENTIAL MODEL
-			Network net = Network(sizes);	
+		{ // PARALLEL MODEL
+			Network_P net = Network_P(sizes);	
 			net.load("../models/" + name);	
 			int n = net.recogn(input);
 			writeNum(socket, &n);
 		}else
 		{
 			if(type_network==1)
-			{ // PARALLEL MODEL
+			{ // SEQUENTIAL MODEL
 				Network net = Network(sizes);
 				//Network_P net = Network_P(sizes);	
 				net.load("../models/" + name);	
@@ -165,8 +165,8 @@ public:
 		
 		// create and train network
 		if(type_network==0)
-		{ // SEQUENTIAL MODEL
-			Network net = Network(sizes);
+		{ // PARALLEL MODEL
+			Network_P net = Network_P(sizes);
 			tm t_train;		
 			tm t_test;
 			vector<double> response;	
@@ -196,10 +196,9 @@ public:
 			writeModel(socket, net.getWeights(), net.getBias(), sizes);
 		}
 		else
-		{ // PARALEL MODEL
+		{ // SEQUENTIAL MODEL
 			if(type_network==1)
 			{
-				//Network_P net = Network_P(sizes);
 				Network net = Network(sizes);
 				tStart = clock();
 				vector<double> response = net.train_backpropagation(mnist.train_data, rateLearning, epoch, error, examplesTrain);	
@@ -226,13 +225,11 @@ public:
 	void readInputData(int socket, vector<ExampleChar> * v, int count, int inSize, int outSize){
 		std::vector<double> fila;
 		std::vector<ExampleChar> res;
-		//cout << outSize << "-------------" << endl;
 		for (int i = 0; i < count; i++)
 		{
 			readVector(socket, &fila);
 			ExampleChar e = ExampleChar(inSize, outSize);
 			e.label = (int) fila[0];
-			//cout << (int) fila[0] << "||";
 			for (int j = 1; j < inSize+1; j++)
 			{
 				e.input_data[j-1] = fila[j];
@@ -240,8 +237,6 @@ public:
 
 			for (int j = 0; j < outSize; j++)
 			{
-
-				//cout << "--" << j << "--" << e.label << endl;
 				if(j==e.label)
 				{
 					e.output[j] = 1;
@@ -281,14 +276,6 @@ public:
 
 	void saveModel(int socket)
 	{
-    	ifstream file_in("../logs/count");
-    	int count; 
-    	file_in >> count;
-    	file_in.close();
-    	ofstream file_out("../logs/count");
-    	file_out << count + 1; 
-    	cout << count << endl;
-    	file_out.close();
 		string name;
 		readLine(socket, &name);
 		std::vector<double> model;
@@ -318,14 +305,8 @@ public:
 	void getModels(int socket)
 	{
     	DIR *ID_Directorio_logs;
-		dirent *Directorio_logs;
-		ID_Directorio_logs = opendir("../logs");
-		//Directorio_logs = readdir(ID_Directorio_logs);		
-
-		DIR *dir;
+		ID_Directorio_logs = opendir("../logs");		
 		dirent *ent;
-		//for(int i = 0; i < Directorio_logs->d_reclen; i++)
-		int c = 0;
 		std::vector<string> names;
 		std::vector<string> logs;
 		while (ent = readdir(ID_Directorio_logs))
@@ -349,7 +330,6 @@ public:
 		writeNum(socket, &size);
 		for (int i = 0; i < names.size(); i++)
 		{
-//cout << names[i] << endl;
 			writeLine(socket, names[i]);
 			writeLine(socket, logs[i]);
 		}		
