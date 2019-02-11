@@ -535,12 +535,15 @@ class Network_P
 			
 		}
 
-		int recogn(double * input)
+		/*int recogn(double * input)
 		{
-			vector<double> salida = feedForward(&input, 0);			
+			double ** d_input;
+			gpuErrchk(cudaMalloc((double***)& d_input, sizes_h[0]*sizeof(double)));
+			gpuErrchk(cudaMemcpy(d_input)) 
+			vector<double> salida = feedForward(d_input, 0);			
 			int sal = index_max(salida);
 			return sal;;
-		}
+		}*/
 
 		vector<vector<double>> getBias()
 		{

@@ -94,9 +94,10 @@ public:
 		{
 			input[i-1] = in[i];
 		}
-		int type_network;
-		readNum(socket, &type_network);
+		//int type_network;
+		//readNum(socket, &type_network);
 		std::vector<int> sizes;
+		//cout << "../models/" << name <<endl;
 		ifstream file("../models/" + name);
 		int layers;
 		file >> layers;
@@ -106,7 +107,12 @@ public:
 			file >> n;
 			sizes.push_back(n);
 		}
-		if(type_network==0)
+		// SEQUENTIAL MODEL
+		Network net = Network(sizes);
+		net.load("../models/" + name);	
+		int n = net.recogn(input);
+		writeNum(socket, &n);
+		/*if(type_network==0)
 		{ // PARALLEL MODEL
 			Network_P net = Network_P(sizes);	
 			net.load("../models/" + name);	
@@ -115,14 +121,9 @@ public:
 		}else
 		{
 			if(type_network==1)
-			{ // SEQUENTIAL MODEL
-				Network net = Network(sizes);
-				//Network_P net = Network_P(sizes);	
-				net.load("../models/" + name);	
-				int n = net.recogn(input);
-				writeNum(socket, &n);
+			{ 
 			}
-		}
+		}*/
 		free(input);	
 	}
 
@@ -163,18 +164,20 @@ public:
 			readInputData(socket, &mnist.test_data, examplesTest, sizes[0], sizes[sizes.size()]);
 		}		
 		
+
+		string s;
+		vector<double> response;
+		tm t_train;		
+		tm t_test;
+		double resp;
+		double test;
 		// create and train network
 		if(type_network==0)
 		{ // PARALLEL MODEL
-			Network_P net = Network_P(sizes);
-			tm t_train;		
-			tm t_test;
-			vector<double> response;	
-			getTime(response = net.train_backpropagation(mnist.train_data, rateLearning, epoch, error, examplesTrain), &t_train);							
-			double test;
+			Network_P net = Network_P(sizes);				
+			getTime(response = net.train_backpropagation(mnist.train_data, rateLearning, epoch, error, examplesTrain), &t_train);										
 			getTime(test = net.test_network(mnist.test_data, examplesTest), &t_test);
-			string s;
-			double resp = response[response.size()-1];
+			resp = response[response.size()-1];
 			if(resp<=error)
 			{
 				s = "Ok";
@@ -199,27 +202,27 @@ public:
 		{ // SEQUENTIAL MODEL
 			if(type_network==1)
 			{
-				Network net = Network(sizes);
-				tStart = clock();
-				vector<double> response = net.train_backpropagation(mnist.train_data, rateLearning, epoch, error, examplesTrain);	
-				tEnd = clock();
-				clock_t train_time = tEnd-tStart;
-				double test = net.test_network(mnist.test_data, examplesTest);
-				string s;
-				if(response[response.size()-1]<=error)
+				Network net = Network(sizes);			
+				getTime(response = net.train_backpropagation(mnist.train_data, rateLearning, epoch, error, examplesTrain), &t_train);										
+				getTime(test = net.test_network(mnist.test_data, examplesTest), &t_test);
+				resp = response[response.size()-1];
+				if(resp<=error)
 					s = "Ok";
 				else
 					s = "No-Ok";
 				writeLine(socket, s);	// Ok o No-Ok
-				writeNum(socket, &train_time);	// Train time
+				char buffer[20];			
+				strftime(buffer, sizeof(buffer), "%H:%M:%S", &t_train);			
+				string s_time(buffer);
+				writeLine(socket, s_time);	// Train time
 				int r = (int)response.size();
 				writeNum(socket, &r); // Count epoch
 				writeNum(socket, &response[response.size()-1]); // Error achieved
-				writeNum(socket, &test); // Precision
-				writeVector(socket, response); // Vector errors		
+				writeNum(socket, &test); // Presicion
+				writeVector(socket, response); // Vector errors
+				writeModel(socket, net.getWeights(), net.getBias(), sizes);
 			}
-		}
-		
+		}		
 	}
 
 	void readInputData(int socket, vector<ExampleChar> * v, int count, int inSize, int outSize){

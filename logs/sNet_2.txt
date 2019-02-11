@@ -1,0 +1,9 @@
+Loading DataSet MNIST...
+Datos de la Red
+Estructura: 784, 500, 300, 100, 10, 
+Velocidad de Aprendizaje: 0.5
+Error min: 0.003
+Tipo Algoritmo: 1
+Ejemplos en entrenamiento: 60000	Ejemplos de prueba: 10000
+Cantidad de epocas: 10
+Training Network...

@@ -18,7 +18,7 @@ int main()
 									"../MNIST/data/train-labels.idx1-ubyte", 
 									"../MNIST/data/t10k-labels.idx1-ubyte", 784, 10);
 
-	int typeNet = 0; // 0 PARALLEL, 1 SEQUENTIAL
+	int typeNet = 1; // 0 PARALLEL, 1 SEQUENTIAL
 	vector<int> sizes;	
 	sizes.push_back(784); sizes.push_back(500); sizes.push_back(300); sizes.push_back(100); sizes.push_back(10);			
 	int EPOCAS = 10;
@@ -45,7 +45,7 @@ int main()
 		printTime(errores = net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, ExTrain));		
 		printTime(net.test_network(mnist.test_data, ExTest));
 		cout << "Error promedio alcanzado: " << errores[errores.size()-1] << endl;
-		net.save("../models/pNet_2");
+		net.save("../models/pNet_3");
 	}
 	else
 	{
