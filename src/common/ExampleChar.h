@@ -8,11 +8,14 @@ public:
 	double * output;
 	int label;
 
-	ExampleChar(int inSize, int outSize)
+	__host__ __device__ ExampleChar(int inSize, int outSize)
 	{
-		input_data = (double*) malloc(sizeof(double)*inSize);
-		output = (double*) malloc(sizeof(double)*outSize);
+		input_data = new double[inSize];
+		output = new double[outSize];
 		label = 0;
+		//input_data = (double*) malloc(sizeof(double)*inSize);
+		//output = (double*) malloc(sizeof(double)*outSize);
+		//label = 0;
 	}
 
 };

@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <iostream>
 #include <cmath>
 #include <vector>
 #include "utilsKernels.h"
+#include "../../common/utilsCommon.h"
 
 using namespace std; 
 /**
@@ -9,12 +11,10 @@ using namespace std;
 *
 */
 __global__ 
-void outputInLayerInput(double ** ptr, ExampleChar * ptr_input, int index)
+void outputInLayerInput(double ** ptr, double ** ptr_input, int index)
 {
 	int i = blockIdx.x;
-	//printf("%d||", ptr_input[index].input_data[i]);
-	
-	ptr[0][i] = ptr_input[index].input_data[i];
+	ptr[0][i] = ptr_input[index][i];
 }
 
 __global__ 
@@ -41,7 +41,7 @@ void outputNeuron(double ** ptr_outputs,
 *	KERNELS for train_backpropagation
 *
 */
-__global__ void computeErrorExitLayer(ExampleChar * x_train, 
+__global__ void computeErrorExitLayer(double ** y_train, 
 				    double ** outputs, 
 				    double ** inputs,
     				double ** deltas,  
@@ -50,7 +50,8 @@ __global__ void computeErrorExitLayer(ExampleChar * x_train,
 				    int e)
 {
 	int i = blockIdx.x;	
-	ptr_error[i] = (x_train[e].output[i] - outputs[j][i]);										
+	//ptr_error[i] = 1;										
+	ptr_error[i] = (y_train[e][i] - outputs[j][i]);										
 	deltas[j][i] = sigmoid_prima(inputs[j][i]) * ptr_error[i];						
 	ptr_error[i] = ptr_error[i] * ptr_error[i]; //Store square of error
 }
@@ -94,18 +95,28 @@ __global__ void copy(double * w_h, double *** w, int l, int j, int i)
 	*w_h = w[l][j][i];
 }
 
-__global__ void printData(ExampleChar * data)
+void copyExamples(double ** x, double ** y, std::vector<ExampleChar> x_train, int cantidad, int inSize, int outSize)
 {
-	for (int i = 0; i < 784; ++i)
+	for (int i = 0; i < cantidad; i++)
 	{
-		printf("%f||", data[0].input_data[i]);
-	}
-	
-}
-void copyExamples(ExampleChar * x, std::vector<ExampleChar> x_train, int cantidad)
-{
-	for (int i = 0; i < cantidad; ++i)
-	{
-		x[i] = x_train[i];
+		memcpy(x[i], x_train[i].input_data, sizeof(double)*inSize);
+		memcpy(y[i], x_train[i].output, sizeof(double)*outSize);
 	}
 }
+
+ __global__ void printMatrix(double ** in, int filas, int columnas)
+ {
+ 	for (int i = 0; i < filas; i++)
+ 	{
+ 		for (int j= 0; j < columnas; j++)
+ 		{
+ 			printf("%f|", in[i][j]);
+ 		}
+ 		printf("\n");
+ 	}
+ }
+
+ __global__ void memCpyExampleCharTODevice(double ** dst, double * src, int i)
+ {
+ 	dst[i] = src;
+ }

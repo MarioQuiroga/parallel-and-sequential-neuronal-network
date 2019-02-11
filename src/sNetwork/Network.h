@@ -9,7 +9,7 @@
 //#include "../common/ExampleChar.h"
 #include "../common/loaderMnist.h"
 
-#include "utils.h"
+#include "../common/utilsCommon.h"
 
 
 using namespace std; 
@@ -240,12 +240,12 @@ class Network
 				cout << endl;*/
 				
 				//cout << "Salida obtenida: " << sal << endl;
-				cout.precision(100);
+				//cout.precision(100);
 				/*for(int j=0;j<salida.size();j++)
 				{				
 					cout << salida[j] << endl;
 				}*/				
-				cout << endl;
+				//cout << endl;
 				
 				if (sal == x_test[i].label)
 				{

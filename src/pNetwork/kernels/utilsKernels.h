@@ -26,14 +26,14 @@ T * getPointer(std::vector<T> & v)
 	return ptr;
 }
 
-__device__ double sigmoid(double x)
+/*__device__ double sigmoid(double x)
 {
 	return 1/(1+exp(-x));
 }
 __device__ double sigmoid_prima(double x)
 {
 	return (sigmoid(x) * (1 - sigmoid(x)));
-}
+}*/
 
 template <typename T>
 __global__ void copyWeight(T * w, T *** weights, int k, int j, int i, int flag)
@@ -81,7 +81,6 @@ __global__ void copyVector(T * o, T ** output, int index, int cantidad)
 		//printf("%f\n", o[i]);
 	}
 }
-
 
 
 

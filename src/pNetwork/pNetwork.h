@@ -124,7 +124,7 @@ class Network_P
 	*	Compute network output for an input
 	*	
 	**/
-	vector<double> feedForward(ExampleChar * input, int i)		
+	vector<double> feedForward(double ** input, int i)		
 	{			
 		// Compute output from input layers		
 		outputInLayerInput<<<sizes_h[0], 1>>>(outputs, input, i);
@@ -148,11 +148,11 @@ class Network_P
 			res[j] = out_h[j];
 			//cout << res[j] << "---";
 		}
-		cout << endl;
+		//cout << endl;
 		return res;
 	}
 
-	void feedForwardTrain(ExampleChar * input, int i)		
+	void feedForwardTrain(double ** input, int i)		
 	{			
 		// Compute output from input layer		
 		outputInLayerInput<<<sizes_h[0], 1>>>(outputs, input, i);		
@@ -189,23 +189,71 @@ class Network_P
 		**/
 		vector<double> train_backpropagation(vector<ExampleChar> x_train, double rateLearning, int epocas, double errorMinimo, int cantidadEjemplos)
 		{	
+			int inSize = sizes_h[0];
+			int outSize = sizes_h[sizes_h.size()-1];
 			std::vector<double> response;
-			time_t first, second;
-			cout << "Training Network..." << endl;
+			time_t first, second;			
 			double ERRORANT = 0;
 			int contadorEpocas = 0;
-			double ERROR = 200.0;		
-			// Copy train set to memory device
-			ExampleChar * d_x_train;
-			gpuErrchk(cudaMalloc((void**) & d_x_train, cantidadEjemplos * sizeof (ExampleChar)));						
-			ExampleChar * x = (ExampleChar*) malloc(sizeof(ExampleChar)*cantidadEjemplos);
-			copyExamples(x, x_train, cantidadEjemplos);
-			gpuErrchk(cudaMemcpy(d_x_train, x, cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice));			
-			//printData<<<1,1>>>(d_x_train);			
-			free(x);
+			double ERROR = 200.0;	
+			double ** d_x_train;	double ** d_y_train;	int * labels;
+			// Alloc memory temp in host
+		 	double ** x = (double**) malloc(sizeof(double*)*cantidadEjemplos);
+			double ** y = (double**) malloc(sizeof(double*)*cantidadEjemplos);
+			int * h_labels = (int*) malloc(sizeof(int)*cantidadEjemplos);;
+			for (int i = 0; i < cantidadEjemplos; i++)
+			{
+				x[i] = (double*) malloc(sizeof(double)*inSize);
+				y[i] = (double*) malloc(sizeof(double)*outSize);
+				h_labels[i] = x_train[i].label;
+			}
+			copyExamples(x, y, x_train, cantidadEjemplos, inSize, outSize);
+			kernelCheck();			
+
+			// Alloc memory in device for train
+			gpuErrchk(cudaMalloc((int**) & labels, sizeof(int)*cantidadEjemplos));
+			gpuErrchk(cudaMemcpy(labels, h_labels, cantidadEjemplos*sizeof(int), cudaMemcpyHostToDevice));
+			//double ** d_x; double ** d_y;
+			gpuErrchk(cudaMalloc((double***) & d_x_train, cantidadEjemplos * sizeof (double*)));						
+			gpuErrchk(cudaMalloc((double***) & d_y_train, cantidadEjemplos * sizeof (double*)));
+			//for (int i = 0; i < cantidadEjemplos; i++)
+			//{
+				memColumnsMatrix<<<cantidadEjemplos, 1>>>(d_x_train, inSize);
+				kernelCheck();
+				memColumnsMatrix<<<cantidadEjemplos, 1>>>(d_y_train, outSize);
+				kernelCheck();
+			//}
+			
+			
+			for (int i = 0; i < cantidadEjemplos; i++)
+			{
+
+				double * d_x_temp;
+				double * d_y_temp;
+				gpuErrchk(cudaMalloc((double**) & d_x_temp, inSize*sizeof(double)));
+				gpuErrchk(cudaMalloc((double**) & d_y_temp, outSize*sizeof(double)));
+				gpuErrchk(cudaMemcpy(d_x_temp, x[i], inSize*sizeof(double), cudaMemcpyHostToDevice));
+				gpuErrchk(cudaMemcpy(d_y_temp, y[i], outSize*sizeof(double), cudaMemcpyHostToDevice));
+				memCpyExampleCharTODevice<<<1,1>>>(d_x_train, d_x_temp, i);	
+				kernelCheck();
+				memCpyExampleCharTODevice<<<1,1>>>(d_y_train, d_y_temp, i);	
+				kernelCheck();
+				//free(d_x_temp);
+				//free(d_y_temp);
+			}	
+			//getPointerChar(d_x_train, d_y_train, labels, x_train, cantidadEjemplos, sizes_h[0], sizes_h[sizes_h.size()-1]);
+			//gpuErrchk(cudaMalloc((void**) & d_x_train, cantidadEjemplos * sizeof (double*)));						
+
+			//kernelCheck();			
+			//getPointerExampleChar(d_x_train, x_train, cantidadEjemplos, sizes_h[0], sizes_h[sizes_h.size()-1]);			
+			//printMatrix<<<1, 1>>>(d_x_train, cantidadEjemplos, sizes_h[0]);
+			//printData<<<1,1>>>(d_x_train,  d_y_train, labels, sizes_h[0], sizes_h[sizes_h.size()-1]);	
+			//kernelCheck();			
+
 			double * error;
 			gpuErrchk(cudaMalloc((void**) &error, sizes_h[sizes_h.size()-1] * sizeof (double)));						
 			double * er = (double*) malloc(sizeof(double)*sizes_h[sizes_h.size()-1]);
+			cout << "Training Network..." << endl;
 			while(ERROR > errorMinimo && contadorEpocas < epocas)
 			{			
 				first = time(NULL);  
@@ -213,7 +261,7 @@ class Network_P
 				for(int e=0; e<cantidadEjemplos; e++) // For each example from d_x_train				
 				{					
 					feedForwardTrain(d_x_train, e);						
-					computeErrorExitLayer<<<sizes_h[numLayers-1], 1>>>(d_x_train, 
+					computeErrorExitLayer<<<sizes_h[numLayers-1], 1>>>(d_y_train, 
 											   outputs,
 											   inputs, 
 											   deltas, 
@@ -280,12 +328,48 @@ class Network_P
 		***/
 		double test_network(vector<ExampleChar> x_test, int cantidadEjemplos)
 		{	
-			ExampleChar * d_x_test;	
-			gpuErrchk(cudaMalloc((void**) & d_x_test, cantidadEjemplos * sizeof (ExampleChar)));
-			ExampleChar * x = (ExampleChar*) malloc(sizeof(ExampleChar)*cantidadEjemplos);
-			copyExamples(x, x_test, cantidadEjemplos);
-			gpuErrchk(cudaMemcpy(d_x_test, x, cantidadEjemplos * sizeof (ExampleChar), cudaMemcpyHostToDevice));
-			free(x);			
+			int inSize = sizes_h[0];
+			int outSize = sizes_h[sizes_h.size()-1];
+			double ** d_x_test;
+			double ** d_y_test;
+			int * labels;
+			// Alloc memory temp in host
+		 	double ** x = (double**) malloc(sizeof(double*)*cantidadEjemplos);
+			double ** y = (double**) malloc(sizeof(double*)*cantidadEjemplos);
+			int * h_labels = (int*) malloc(sizeof(int)*cantidadEjemplos);;
+			for (int i = 0; i < cantidadEjemplos; i++)
+			{
+				x[i] = (double*) malloc(sizeof(double)*inSize);
+				y[i] = (double*) malloc(sizeof(double)*outSize);
+				h_labels[i] = x_test[i].label;
+			}
+			copyExamples(x, y, x_test, cantidadEjemplos, inSize, outSize);
+			kernelCheck();						
+			
+			// Alloc memory in device for train
+			gpuErrchk(cudaMalloc((int**) & labels, sizeof(int)*cantidadEjemplos));
+			gpuErrchk(cudaMemcpy(labels, h_labels, cantidadEjemplos*sizeof(int), cudaMemcpyHostToDevice));
+			gpuErrchk(cudaMalloc((double***) & d_x_test, cantidadEjemplos * sizeof (double*)));						
+			gpuErrchk(cudaMalloc((double***) & d_y_test, cantidadEjemplos * sizeof (double*)));
+			memColumnsMatrix<<<cantidadEjemplos, 1>>>(d_x_test, inSize);
+			kernelCheck();
+			memColumnsMatrix<<<cantidadEjemplos, 1>>>(d_y_test, outSize);
+			kernelCheck();			
+			
+			for (int i = 0; i < cantidadEjemplos; i++)
+			{
+				double * d_x_temp;
+				double * d_y_temp;
+				gpuErrchk(cudaMalloc((double**) & d_x_temp, inSize*sizeof(double)));
+				gpuErrchk(cudaMalloc((double**) & d_y_temp, outSize*sizeof(double)));
+				gpuErrchk(cudaMemcpy(d_x_temp, x[i], inSize*sizeof(double), cudaMemcpyHostToDevice));
+				gpuErrchk(cudaMemcpy(d_y_temp, y[i], outSize*sizeof(double), cudaMemcpyHostToDevice));
+				memCpyExampleCharTODevice<<<1,1>>>(d_x_test, d_x_temp, i);	
+				kernelCheck();
+				memCpyExampleCharTODevice<<<1,1>>>(d_y_test, d_y_temp, i);	
+				kernelCheck();
+			}	
+
 			double suma = 0;
 			for(int i=0; i<cantidadEjemplos;i++)
 			{

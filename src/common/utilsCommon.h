@@ -28,6 +28,15 @@ int index_max(vector<double> entrada)
 	}
 	return indice;	
 }
+
+__host__ __device__ double sigmoid(double x)
+{
+	return 1/(1+exp(-x));
+}
+__host__ __device__ double sigmoid_prima(double x)
+{
+	return (sigmoid(x) * (1 - sigmoid(x)));
+}
 #endif
 
 

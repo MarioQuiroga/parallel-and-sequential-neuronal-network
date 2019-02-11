@@ -8,8 +8,8 @@ CUDACCFLAGS=-std c++11 --expt-extended-lambda -x cu --gpu-architecture compute_3
 OUTDIR=../bin/
 
 #all: $(SMAIN)
-#all: $(PMAIN) $(SMAIN)
-all: $(PMAIN) $(SMAIN) $(SERVER)
+all: $(PMAIN) 
+#all: $(PMAIN) $(SMAIN) $(SERVER)
 #all: $(SERVER)
 	
 #COMPILE

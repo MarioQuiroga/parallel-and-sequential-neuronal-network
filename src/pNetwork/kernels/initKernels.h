@@ -29,6 +29,14 @@ void memColumns(T ** ptr, int * sizes)
 	ptr[blockIdx.x] = (T *) malloc(sizeof(T) * sizes[blockIdx.x]);
 }
 
+template <typename T>
+__global__
+void memColumnsMatrix(T ** ptr, int size)
+{
+	int i = blockIdx.x;
+	ptr[i] = (T *) malloc(sizeof(T) * size);
+}
+
 // 	copy to device
 template <typename T>
 __global__		
