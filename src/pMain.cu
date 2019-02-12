@@ -20,7 +20,7 @@ int main()
 
 	int typeNet = 1; // 0 PARALLEL, 1 SEQUENTIAL
 	vector<int> sizes;	
-	sizes.push_back(784); sizes.push_back(500); sizes.push_back(300); sizes.push_back(100); sizes.push_back(10);			
+	sizes.push_back(784); sizes.push_back(500); sizes.push_back(300); sizes.push_back(100); sizes.push_back(100);  sizes.push_back(10);			
 	int EPOCAS = 10;
 	double ERROR = 0.003;
 	double RATELEARNING = 0.5;
@@ -53,7 +53,7 @@ int main()
 		printTime(errores = net.train_backpropagation(mnist.train_data, RATELEARNING, EPOCAS, ERROR, ExTrain));		
 		printTime(net.test_network(mnist.test_data, ExTest));
 		cout << "Error promedio alcanzado: " << errores[errores.size()-1] << endl;
-		net.save("../models/sNet_2");
+		net.save("../models/sNet_3");
 	}	
     return 0;
 }

@@ -7,3 +7,7 @@ Tipo Algoritmo: 1
 Ejemplos en entrenamiento: 60000	Ejemplos de prueba: 10000
 Cantidad de epocas: 10
 Training Network...
+Epoca: 0	ERROR: 0.45120009344247524740723065406200475990772247314453125
+Tiempo epoca: 0:47:15
+Epoca: 1	ERROR: 0.4452046315967990164352841020445339381694793701171875
+Tiempo epoca: 0:47:14
