@@ -1,3 +1,3 @@
-# TpFinal Sistemas Distribuidos y Programación Paralela Unlu2018
-# Red Neuronal Paralela 
+# Implementaciòn Secuencial y Paralela (CUDA) de una Red Neuronal Artificial.
+
 
